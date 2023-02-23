@@ -1,0 +1,61 @@
+node ("docker_slave") {
+  String project = "bi-crm-poc"
+  String appName = "sot-api"
+  String environment = env.ENVIRONMENT.toLowerCase()
+  String endPointServiceVersion = "gcloud endpoints configs list --service=${appName}." + environment + '.endpoints.bi-crm-poc.cloud.goog | sed -n 2p | cut -f1 -d " "'
+  String namespace = ["prod": "bi-crm-prod", "sit": "bi-crm-sit"].get(environment, "bi-crm-dev") // Default to dev
+  String context = ["prod": "pai-prod", "sit": "pai-sit"].get(environment, "pai-sit") // Default to dev TODO - needs changing
+  String jenkinsHome = "/var/jenkins_home"
+  String gitBranch
+  String imageTag
+
+  println "Building in namespace = ${namespace}, and context = ${context} for environment = ${environment}"
+
+  stage("Checkout") {
+    checkout scm
+    gitBranch = sh(returnStdout: true, script: 'git name-rev --name-only HEAD').trim().tokenize('/').last()
+    imageTag = "gcr.io/${project}/parallelai/${appName}:${gitBranch}.${env.BUILD_NUMBER}"
+  }
+
+  stage("Build") {
+    sh "ls -alrt ${jenkinsHome}"
+    sh "sbt -Dsbt.ivy.home=${jenkinsHome}/.ivy2/ clean docker"
+  }
+
+  stage("Tag Image") {
+    sh "docker tag parallelai/${appName} ${imageTag}"
+  }
+
+  stage("Push Image") {
+    sh "gcloud docker -- push ${imageTag}"
+  }
+
+  stage("Deploy") {
+    println "Deploying ${environment}"
+
+    env(environment, [
+      "END_POINT_SERVICE": "${appName}.${environment}.endpoints.bi-crm-poc.cloud.goog",
+      "END_POINT_SERVICE_VERSION": sh(returnStdout: true, script: endPointServiceVersion).trim(),
+      "API_IMAGE": imageTag,
+      "API_HOST": "${appName}.${environment}",
+      "EXECUTOR_DAO_PREFIX": environment
+    ])
+
+    sh "kubectl --namespace=${namespace} --context=${context} apply -f ./scripts/k8s/services/"
+    sh "gcloud endpoints services deploy ./swagger/reflex_api_v1.0.0rc.yaml"
+    // sh "kubectl --namespace=${namespace} --context=${context} apply secret generic service-account-creds --from-file=/home/jenkins/.config/gcloud/pai-tooling-bi-crm-poc.json"
+    sh "kubectl --namespace=${namespace} --context=${context} apply -f ./scripts/k8s/${environment}/"
+  }
+}
+
+def env(environment, keyValues) {
+  keyValues.each { key, value ->
+    addEnv(key, value, "./scripts/k8s/${environment}/deployment.yaml")
+    addEnv(key, value, "./swagger/reflex_api_v1.0.0rc.yaml")
+  }
+}
+
+def addEnv(key, value, file) {
+  //sh "sed -i.bak s/:\\\${$key}/:$value/g $file"
+  sh "sed -i.bak 's#\\\${$key}#$value#' $file"
+}

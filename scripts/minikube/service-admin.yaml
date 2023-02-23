@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sot-api-admin
+  labels:
+    app: sot-api
+    service: api
+spec:
+  selector:
+    app: sot-api # Label to query pods by
+    role: backend
+  type: NodePort # Important! This will expose a node port over your Kubernetes IP
+  #sessionAffinity: None
+  ports:
+    - name: admin
+      port: 9990
+      targetPort: 9990
+      protocol: TCP

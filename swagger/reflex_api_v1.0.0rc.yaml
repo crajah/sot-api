@@ -1,0 +1,944 @@
+swagger: '2.0'
+
+info:
+  description: Reflex REST API used to setup schemas and rules.
+  version: 1.0.0
+  title: Parallel AI Reflex
+  contact:
+    email: crajah@parallelai.com
+
+host: ${END_POINT_SERVICE}
+
+basePath: /sot-api/2
+
+tags:
+  - name: folders
+    description: 'Folders are used to group Schemas, Taps and Rules'
+  - name: schemas
+    description: >-
+      Schemas define the shape of teh data. They can be in Avro, Protocol
+      Buffers and JSON Schema format
+  - name: versions
+    description: Versions represent the version of the Executor to use with the Rule
+  - name: taps
+    description: Taps are definitions of either a Source or a Sink
+  - name: rules
+    description: Rules are the actual definition of the decision rule.
+
+schemes:
+  - http
+  - https
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+
+# This section requires all requests to any path to require an API key.
+security:
+- api_key: []
+
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+
+  # This section configures authentication using Google API Service Accounts
+  # to sign a json web token. This is mostly used for server-to-server
+  # communication.
+  google_jwt:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    # This must match the 'iss' field in the JWT.
+    x-issuer: "jwt-client.endpoints.sample.google.com"
+    # Update this with your service account's email address.
+    x-jwks_uri: "https://www.googleapis.com/service_accounts/v1/jwk/terraform@bi-crm-poc.iam.gserviceaccount.com"
+
+  # This section configures authentication using Google OAuth2 ID Tokens.
+  # ID Tokens can be obtained using OAuth2 clients, and can be used to access
+  # your API on behalf of a particular user.
+  google_id_token:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-issuer: "accounts.google.com"
+    x-jwks_uri: "https://www.googleapis.com/oauth2/v1/certs"
+
+responses:
+  '401':
+    description: Unauthorised.
+    schema:
+      $ref: '#/definitions/ApiResponse'
+  '404':
+    description: Not found. Somethign wrong with the ID used to query.
+    schema:
+      $ref: '#/definitions/ApiResponse'
+  '500':
+    description: Some sort of Internal Error occured. Try again in a while.
+    schema:
+      $ref: '#/definitions/ApiResponse'
+
+paths:
+  /env:
+    post:
+      tags:
+        - env
+      summary: Create a Env
+      operationId: create_env
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Name'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - envs
+      summary: Get all the Envs in the System
+      operationId: get_all_envs
+      description: ''
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - envs
+      summary: Delete an Env
+      operationId: delete_env
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+        '500':
+          $ref: '#/responses/500'
+
+  /version:
+    post:
+      tags:
+        - versions
+      summary: >-
+        Setup a new version executor of rules. Not to be used unless new version
+        has been enabled by admin
+      operationId: get_all_versions
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - versions
+      summary: Find all executor versions
+      operationId: find_executor_versions
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExecutorActive'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - versions
+      summary: Delete an existing executor version. Not to be used lightly
+      operationId: delete_exectuor_version
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /version/refresh:
+    post:
+      tags:
+        - versions
+      summary: Refresh an existing executor version
+      operationId: refresh_exectuor_version
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /version/active:
+    post:
+      tags:
+        - versions
+      summary: Activate / Deactive an executor version
+      operationId: activate_deactivate_executor_version
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutorActive'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - versions
+      summary: Find all active executor versions
+      operationId: find_all_active_executor_versions
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExecutorActive'
+        '500':
+          $ref: '#/responses/500'
+
+  /schema:
+    post:
+      tags:
+        - schemas
+      summary: Register a new schema
+      operationId: register_schema
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Schema'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - schemas
+      summary: Get All Schemas
+      operationId: get_all_schemas
+      description: ''
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SchemaInfo'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - schemas
+      summary: Delete a Schema
+      operationId: delete_schema
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+        '500':
+          $ref: '#/responses/500'
+
+  /schema/{schema_id}:
+    get:
+      tags:
+        - schemas
+      summary: Get a schema
+      operationId: get_schema
+      description: ''
+      parameters:
+        - in: path
+          name: schema_id
+          type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+  /tap:
+    post:
+      tags:
+        - taps
+      summary: Create a new Tap definition
+      operationId: create_new_tap
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Tap'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/Id'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - taps
+      summary: Get all Taps defined
+      operationId: get_all_taps
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Id'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - taps
+      summary: Delete an existing Tap definition
+      operationId: delete_tap
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /tap/{tap_id}:
+    get:
+      tags:
+        - taps
+      summary: Get details about a Tap
+      operationId: get_tap_details
+      description: ''
+      parameters:
+        - in: path
+          name: tap_id
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully acquired
+          schema:
+            $ref: '#/definitions/Tap'
+        '500':
+          $ref: '#/responses/500'
+
+  /step:
+    post:
+      tags:
+        - steps
+      summary: Create a new Step definition
+      operationId: create_new_step
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Tap'
+      responses:
+        '200':
+          description: Successfully added
+          schema:
+            $ref: '#/definitions/Id'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - steps
+      summary: Get all Steps defined
+      operationId: get_all_steps
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Id'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - steps
+      summary: Delete an existing Step definition
+      operationId: delete_step
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: Successfully delete
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /step/{step_id}:
+    get:
+      tags:
+        - steps
+      summary: Get details about a Step
+      operationId: get_step_details
+      description: ''
+      parameters:
+        - in: path
+          name: step_id
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully acquired
+          schema:
+            $ref: '#/definitions/Tap'
+        '500':
+          $ref: '#/responses/500'
+
+  /dag:
+    post:
+      tags:
+        - dag
+      summary: Create a new DAG definition
+      operationId: create_dag
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/Dag'
+      responses:
+        '200':
+          description: Successfully created
+          schema:
+            $ref: '#/definitions/Id'
+        '500':
+          $ref: '#/responses/500'
+
+    get:
+      tags:
+        - dag
+      summary: Get all DAGs defined
+      operationId: get_all_dags
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Dag'
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - dag
+      summary: Delete an existing Dag
+      operationId: delete_dag
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+        '500':
+          $ref: '#/responses/500'
+
+  /dag/{dag_id}:
+    get:
+      tags:
+        - dag
+      summary: Get details about a DAG
+      operationId: delete_dag_details
+      description: ''
+      parameters:
+        - in: path
+          name: dag_id
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully acquired
+          schema:
+            $ref: '#/definitions/Dag'
+        '500':
+          $ref: '#/responses/500'
+
+  /rule:
+    get:
+      tags:
+        - rules
+      summary: Get all rules launched
+      operationId: get_launched_rules
+      description: Returns all rules and status of each rule.
+      parameters: []
+      responses:
+        '200':
+          description: Successful
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/RuleStatus"
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - rules
+      summary: Delete a rule instance
+      operationId: delete_rule
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+        '500':
+          $ref: '#/responses/500'
+
+  /rule/build:
+    put:
+      tags:
+        - rules
+      summary: Build the Rule from its rule config
+      operationId: build_rule
+      description: >
+        Allows for the direct creation of a rule with its associated rule config.
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '202':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+  /rule/compose:
+    put:
+      tags:
+        - rules
+      summary: Compose a rule instance from its DAG
+      operationId: compose_rule
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Name'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+  /rule/launch:
+    put:
+      tags:
+        - rules
+      summary: Launch a Rule
+      operationId: launch_rule
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /rule/stop:
+    put:
+      tags:
+        - rules
+      summary: Stop a Rule
+      operationId: stop_rule
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '500':
+          $ref: '#/responses/500'
+
+  /rule/{rule_id}/status:
+    get:
+      tags:
+        - rules
+      summary: Get status of a Rule
+      operationId: get_rule_status
+      description: ''
+      parameters:
+        - in: path
+          name: rule_id
+          type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+
+definitions:
+  ExecutorInfo:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Version of the Executor
+
+  ExecutorActive:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Version of the Executor
+      active:
+        type: boolean
+        description: Activaton status of the executor version
+
+  Name:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Usually human-readable name. Preferred to be unique
+
+  Id:
+    type: object
+    properties:
+      id:
+        type: string
+        description: System generated ID
+
+  IdForName:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Usually human-readable name. Preferred to be unique
+      id:
+        type: string
+        description: System generated ID
+
+  SchemaInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'System created ID, ususally in the fomrat <name>:<id>.'
+      name:
+        type: integer
+        format: int32
+        description: Version of the Schema.
+      version:
+        type: integer
+        format: int32
+        description: Version of the Schema.
+      format:
+        type: string
+        description: |
+          Supported values:
+            - avro: Apache Avro Schema format
+            - proto: Google Protocol Buffers format
+            - bigquery: Google Big Query format
+            - json: JSON Schema format
+            - generic: Generic Reflex format
+
+  SchemaConvert:
+    type: object
+    properties:
+      name:
+        type: string
+        description: >-
+          Name of the Schema. Used to reference this schema. System created ID
+          is in the format <name>:<version>
+      version:
+        type: integer
+        format: int32
+        description: 'Version of the Schema. If blank, system will fill the latest value'
+      format:
+        type: string
+        description: |
+          Supported values:
+            - avro: Apache Avro Schema format
+            - proto: Google Protocol Buffers format
+            - bigquery: Google Big Query format
+            - json: JSON Schema format
+            - generic: Generic Reflex format
+
+  Schema:
+    type: object
+    properties:
+      name:
+        type: string
+        description: >-
+          Name of the Schema. Used to reference this schema. System created ID
+          is in the format <name>:<version>
+      version:
+        type: integer
+        format: int32
+        description: 'Version of the Schema. If blank, system will fill the latest value'
+      format:
+        type: string
+        description: |
+          Supported values:
+            - avro: Apache Avro Schema format
+            - proto: Google Protocol Buffers format
+            - bigquery: Google Big Query format
+            - json: JSON Schema format
+            - generic: Generic Reflex format
+      schema:
+        type: string
+        description: The actual schema as a string. Could be an embedded JSON as well.
+
+  SchemaVersion:
+    type: object
+    properties:
+      version:
+        type: integer
+        format: int32
+        description: 'Version of the Schema. If blank, system will fill the latest value'
+      format:
+        type: string
+        description: |
+          Supported values:
+            - avro: Apache Avro Schema format
+            - proto: Google Protocol Buffers format
+            - bigquery: Google Big Query format
+            - json: JSON Schema format
+            - generic: Generic Reflex format
+      schema:
+        type: string
+        description: The actual schema as a string. Could be an embedded JSON as well.
+
+  SchemaInstance:
+    type: object
+    properties:
+      format:
+        type: string
+        description: |
+          Supported values:
+            - avro: Apache Avro Schema format
+            - proto: Google Protocol Buffers format
+            - bigquery: Google Big Query format
+            - json: JSON Schema format
+            - generic: Generic Reflex format
+      schema:
+        type: string
+        description: The actual schema as a string. Could be an embedded JSON as well.
+
+  Step:
+    type: object
+    properties:
+      type:
+        type: string
+        description: |
+          Supported values:
+            - transformation: Step that manipulates data in the stream
+      name:
+        type: string
+        description: Name used to identify a step. Should be unique within a rule
+      op:
+        type: string
+        description: |
+          Supported Values:
+            - map: manipulate fields in a single record of data in a stream
+              - append: appends a field to a record
+              - update: update the value of a field in a record
+              - remove: remove a field in a record
+              - project: project fields in a record
+            - filter: filter out records of data based on a criterion
+      func:
+        type: string
+        description: Actual code used to transform data
+
+  SourceSink:
+    type: object
+    properties:
+      type:
+        type: string
+        description: |
+          Supported values:
+            - source: Source for streaming data
+            - sink: Sink for streaming data
+      name:
+        type: string
+        description: Name used to identify a step. Should be unique within a rule
+      schema:
+        type: string
+        description: ID of the Schema used for the Source or Sink
+      source:
+        type: string
+        description: ID of the Tap used for the Source or Sink
+
+  Tap:
+    type: string
+
+  DagItem:
+    type: object
+    properties:
+      from:
+        type: string
+        description: Step from which the edge starts
+      to:
+        type: string
+        description: Step to which the edge ends
+
+  Dag:
+    type: object
+    items:
+      $ref: '#/definitions/DagItem'
+
+  ApiResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      msg:
+        type: string
+
+  RuleStatus:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      env:
+        type: string
+      version:
+        type: string

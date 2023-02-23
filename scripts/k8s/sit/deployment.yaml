@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sot-api
+  labels:
+    app: sot-api
+    role: backend
+    service: api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: sot-api
+      labels:
+        app: sot-api
+        role: backend
+        env: dev
+    spec:
+      containers:
+        - name: esp
+          image: gcr.io/endpoints-release/endpoints-runtime:1
+          args: [
+            "--http_port=8080",
+            "--ssl_port", "443",
+            "--backend=127.0.0.1:8880",
+            "--service=${END_POINT_SERVICE}",
+            "--version=${END_POINT_SERVICE_VERSION}",
+          ]
+          ports:
+            - containerPort: 8080
+            - containerPort: 443
+          volumeMounts:
+            - mountPath: /etc/nginx/creds
+              name: service-account-creds
+              readOnly: true
+            - mountPath: /etc/nginx/ssl
+              name: nginx-ssl
+              readOnly: true
+        - name: sot-api
+          image: ${API_IMAGE}
+          ports:
+            - containerPort: 8880
+            - containerPort: 9990
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 100m
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AWS_SECRET_ACCESS_KEY
+              value: w2lFZ4umi6Bw3BHjtfhh68caj1rkxx0CggLXsMMK
+            - name: AWS_ACCESS_KEY_ID
+              value: AKIAIVPAR6IBVVNHRQGQ
+            - name: EXECUTOR_DAO_PREFIX
+              value: ${EXECUTOR_DAO_PREFIX}
+          resources:
+                requests:
+                  memory: "8Gi"
+                  cpu: "4"
+                limits:
+                  memory: "12Gi"
+                  cpu: "8"
+      volumes:
+        - name: service-account-creds
+          secret:
+            secretName: service-account-creds
+        - name: nginx-ssl
+          secret:
+            secretName: nginx-ssl
+      #dnsPolicy: ClusterFirst
+      #restartPolicy: Always
+      #securityContext: {}
+      #terminationGracePeriodSeconds: 30

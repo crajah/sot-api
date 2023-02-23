@@ -1,0 +1,23 @@
+sot-licence:
+  image: parallelai/sot-licence:latest
+  volumes:
+    - ~/.aws/credentials:/root/.aws/credentials:ro
+    - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+  environment:
+    GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
+  ports:
+    - "8881:8881"
+    - "9991:9991"
+
+sot-api:
+  image: parallelai/sot-api:latest
+  volumes:
+    - ~/.aws/credentials:/root/.aws/credentials:ro
+    - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+  environment:
+    GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
+  ports:
+    - "8880:8880"
+    - "9990:9990"
+  links:
+    - sot-licence:licence.sot.parallelai.com

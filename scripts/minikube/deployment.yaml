@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sot-api
+  labels:
+    app: sot-api
+    service: api
+    role: backend
+spec:
+  replicas: 1 # Number of pods running with the same image at any point in time
+  template:
+    metadata:
+      name: sot-api
+      labels:
+        app: sot-api # Label we’ll use to access app later on
+        role: backend
+        env: dev
+    spec:
+      volumes:
+        - name: gcloud-config
+          hostPath:
+            path: /Users/davidainslie/.config/gcloud # TODO - Sort out hardcoding
+            type: Directory
+      containers:
+        - name: sot-api
+          image: gcr.io/bi-crm-poc/pai/sot-api:develop.55
+          ports:
+            - containerPort: 8880 # Port exposed by the container
+            - containerPort: 9990 # Port exposed by the container
+          volumeMounts:
+            - name: gcloud-config
+              mountPath: /.config/gcloud
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /.config/gcloud/application_default_credentials # TODO - Sort out hardcoding
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 100m
+          imagePullPolicy: IfNotPresent
+      #dnsPolicy: ClusterFirst
+      #restartPolicy: Always
+      #securityContext: {}
+      #terminationGracePeriodSeconds: 30
