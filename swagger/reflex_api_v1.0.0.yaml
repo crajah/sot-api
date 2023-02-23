@@ -5,7 +5,7 @@ info:
   title: Parallel AI Reflex
   contact:
     email: crajah@parallelai.com
-host: sot-executor-api.endpoints.bi-crm-poc.cloud.goog
+host: sot-api.endpoints.bi-crm-poc.cloud.goog
 basePath: /sot-api/2
 tags:
   - name: folders
