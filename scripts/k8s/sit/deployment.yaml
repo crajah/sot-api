@@ -42,9 +42,12 @@ spec:
             - containerPort: 8880
             - containerPort: 9990
           resources:
+            requests:
+              memory: "8Gi"
+              cpu: "4"
             limits:
-              memory: 1Gi
-              cpu: 100m
+              memory: "12Gi"
+              cpu: "8"
           imagePullPolicy: IfNotPresent
           env:
             - name: AWS_SECRET_ACCESS_KEY
@@ -53,13 +56,6 @@ spec:
               value: AKIAIVPAR6IBVVNHRQGQ
             - name: EXECUTOR_DAO_PREFIX
               value: ${EXECUTOR_DAO_PREFIX}
-          resources:
-                requests:
-                  memory: "8Gi"
-                  cpu: "4"
-                limits:
-                  memory: "12Gi"
-                  cpu: "8"
       volumes:
         - name: service-account-creds
           secret:

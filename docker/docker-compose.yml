@@ -20,4 +20,4 @@ sot-api:
     - "8880:8880"
     - "9990:9990"
   links:
-    - sot-licence:licence.sot.parallelai.com
+    - sot-licence

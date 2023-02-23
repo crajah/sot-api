@@ -24,7 +24,7 @@ class HealthEndpointsSpec extends WordSpec with MustMatchers {
 
     "indicate a healthy API Server application" in new HealthEndpoints {
       implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
-        .whenRequestMatches(req => req.uri.host.contains("licence.sot.parallelai.com") && req.uri.path.startsWith(Seq(licence.name, "2", "health")))
+        .whenRequestMatches(req => req.uri.host.contains(licence.name) && req.uri.path.startsWith(Seq(licence.name, "2", "health")))
         .thenRespond(Response(s"Successfully pinged service ${licence.name}").toJson.prettyPrint)
 
       val healthLicence: Endpoint[Response] = super.healthLicence
