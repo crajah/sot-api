@@ -93,12 +93,6 @@ paths:
       responses:
         '200':
           description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/IdForName'
-        '500':
-          $ref: '#/responses/500'
 
   /health:
     get:
@@ -110,12 +104,6 @@ paths:
       responses:
         '200':
           description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/IdForName'
-        '500':
-          $ref: '#/responses/500'
 
   /env:
     post:
