@@ -6,7 +6,7 @@ info:
   contact:
     email: crajah@parallelai.com
 host: sot-api.endpoints.bi-crm-poc.cloud.goog
-basePath: /api/2
+basePath: /sot-api/2
 tags:
   - name: folders
     description: 'Folders are used to group Schemas, Taps and Rules'

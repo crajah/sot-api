@@ -9,7 +9,7 @@ info:
 
 host: ${END_POINT_SERVICE}
 
-basePath: /api/2
+basePath: /sot-api/2
 
 tags:
   - name: folders

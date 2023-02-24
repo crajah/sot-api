@@ -30,9 +30,10 @@ trait GoogleCloudClient {
     // machine. In that case, the desired scopes must be passed in manually. When the code is
     // running in GCE, GKE or a Managed VM, the scopes are pulled from the GCE metadata server.
     // See https://developers.google.com/identity/protocols/application-default-credentials for more information.
-    if (credential.createScopedRequired)
+    if (credential.createScopedRequired) {
       credential.createScoped(Collections.singletonList("https://www.googleapis.com/auth/cloud-platform"))
-    else
+    } else {
       credential
+    }
   }
 }
