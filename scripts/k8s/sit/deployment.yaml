@@ -56,6 +56,11 @@ spec:
               value: AKIAIVPAR6IBVVNHRQGQ
             - name: EXECUTOR_DAO_PREFIX
               value: ${EXECUTOR_DAO_PREFIX}
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: SECRET
       volumes:
         - name: service-account-creds
           secret:

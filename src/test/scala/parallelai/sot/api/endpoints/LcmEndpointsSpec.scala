@@ -26,7 +26,7 @@ class LcmEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
 
       override lazy val lcmEnvDAO: ApiDatastore[Environment] = new ApiDatastore[Environment] {
         override def findOneById[L <: HList](id: String)(implicit gen: Aux[Environment, L], toL: ToEntity[L], fromL: FromEntity[L]): Future[Option[Environment]] =
-          Future.successful(Option(Environment("envId", "envName", "launchOpts", "projectId")))
+          Future.successful(Option(Environment("envId", "envName", EncryptedString("username_password"), "launchOpts", "projectId")))
       }
 
       val input: Input = put(p"/$lcmPath/stop").withBody[Text.Plain](mockBody)

@@ -7,27 +7,25 @@ import parallelai.common.secure.{ AES, CryptoMechanic, CryptoResult }
 import parallelai.sot.api.config.secret
 
 // TODO - To use
-class EncryptedString(str: String) {
-  def get: String = str
-}
+case class EncryptedString(value: String)
 
 object EncryptedString {
   implicit object EncryptedStringFormat extends JsonFormat[EncryptedString] {
-    def write(obj: EncryptedString) = JsString(obj.get)
+    def write(obj: EncryptedString) = JsString(obj.value)
 
     def read(json: JsValue): EncryptedString = json match {
-      case JsString(s) => new EncryptedString(s)
+      case JsString(s) => EncryptedString(s)
       case _ => throw new UnsupportedOperationException("Formats can only be a String")
     }
   }
 
-  implicit val entityMappableType: BaseDatastoreMappableType[EncryptedString] = at[EncryptedString](toE, fromE)
+  implicit val entityMappableType: BaseDatastoreMappableType[EncryptedString] = at[EncryptedString](fromEntity, toEntity)
 
   private val datastoreType = DatastoreType[CryptoResult[Array[Byte]]]
 
   private val crypto = new CryptoMechanic(AES, secret.getBytes())
 
-  private def toE(v: com.google.datastore.v1.Value): EncryptedString = {
+  private def fromEntity(v: com.google.datastore.v1.Value): EncryptedString = {
     val dsEntity = v.getEntityValue // get the DataStore Entity object
     val cryptoResultObject = datastoreType.fromEntity(dsEntity) // Convert it to a Cryptoresult object
 
@@ -45,8 +43,8 @@ object EncryptedString {
     }
   }
 
-  private def fromE(i: EncryptedString): com.google.datastore.v1.Value = {
-    val clearBytes = i.get.getBytes // get the bytes in the clear
+  private def toEntity(encryptedString: EncryptedString): com.google.datastore.v1.Value = {
+    val clearBytes = encryptedString.value.getBytes // get the bytes in the clear
 
     val cryptoResult = crypto.encrypt[Array[Byte], Array[Byte]](clearBytes) // Encrypt them.
 

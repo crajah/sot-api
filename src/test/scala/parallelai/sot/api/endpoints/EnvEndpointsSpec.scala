@@ -16,8 +16,8 @@ class EnvEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
       override lazy val environmentDAO: ApiDatastore[Environment] = new ApiDatastore[Environment] {
         override def findAll[L <: HList](implicit gen: Aux[Environment, L], toL: ToEntity[L], fromL: FromEntity[L]): Future[List[Environment]] =
           Future.successful(List(
-            Environment("envId", "envName", "launchOpt", "projectId"),
-            Environment("envId2", "envName2", "launchOpt2", "projectId")))
+            Environment("envId", "envName", EncryptedString("username_password"), "launchOpt", "projectId"),
+            Environment("envId2", "envName2", EncryptedString("username_password"), "launchOpt2", "projectId")))
       }
 
       val Some(response) = environments(get(p"/$envPath")).awaitValueUnsafe()
@@ -30,7 +30,7 @@ class EnvEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
     "retrieve an env for a given id" in new EnvEndpoints with DatastoreConfig {
       override lazy val environmentDAO: ApiDatastore[Environment] = new ApiDatastore[Environment] {
         override def findOneById[L <: HList](id: String)(implicit gen: Aux[Environment, L], toL: ToEntity[L], fromL: FromEntity[L]): Future[Option[Environment]] =
-          Future.successful(Some(Environment("envId", "envName", "launchOpt", "projectId")))
+          Future.successful(Some(Environment("envId", "envName", EncryptedString("username_password"), "launchOpt", "projectId")))
       }
 
       val Some(response) = environment(get(p"/$envPath/envId")).awaitValueUnsafe()
