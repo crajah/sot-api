@@ -93,7 +93,6 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       shapeless,
       typesafeConfig,
       pureConfig,
-      pureConfigMacros,
       grizzledLogging,
       logback,
       eclipseGit,

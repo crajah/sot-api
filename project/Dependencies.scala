@@ -15,9 +15,8 @@ object Dependencies {
   val mockitoScala = "org.markushauck" %% "mockitoscala" % "0.3.0"
   val testContainers = "com.dimafeng" %% "testcontainers-scala" % "0.11.0"
 
-  val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
+  val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   val pureConfig = "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
-  val pureConfigMacros = "com.github.pureconfig" %% "pureconfig-macros" % pureConfigVersion
 
   val grizzledLogging = "org.clapper" %% "grizzled-slf4j" % "1.3.2"
   val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
