@@ -6,9 +6,9 @@ import io.finch.Endpoint
 import io.finch.Input._
 import spray.json._
 import spray.json.lenses.JsonLenses._
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
-import com.softwaremill.sttp.{ Response => _ }
+import com.softwaremill.sttp.{Response => _}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
@@ -19,20 +19,20 @@ class HealthEndpointsSpec extends WordSpec with MustMatchers {
       val Some(response) = health(get(p"/$healthPath")).awaitValueUnsafe()
 
       response.status mustEqual Status.Ok
-      response.content.convertTo[String] mustEqual s"Successfully pinged service ${api.name}"
+      response.content.convertTo[String] mustEqual s"Successfully pinged service ${api.context}"
     }
 
     "indicate a healthy API Server application" in new HealthEndpoints {
       implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
-        .whenRequestMatches(req => req.uri.host.contains(licence.name) && req.uri.path.startsWith(Seq(licence.name, "2", "health")))
-        .thenRespond(Response(s"Successfully pinged service ${licence.name}").toJson.prettyPrint)
+        .whenRequestMatches(req => req.uri.host.contains(licence.name) && req.uri.path.startsWith(Seq(licence.context, "2", "health")))
+        .thenRespond(Response(s"Successfully pinged service ${licence.context}").toJson.prettyPrint)
 
       val healthLicence: Endpoint[Response] = super.healthLicence
 
-      val Some(response) = healthLicence(get(p"/$healthPath/${licence.name}")).awaitValueUnsafe()
+      val Some(response) = healthLicence(get(p"/$healthPath/${licence.context}")).awaitValueUnsafe()
 
       response.status mustEqual Status.Ok
-      response.content.extract[String]("content") mustEqual s"Successfully pinged service ${licence.name}"
+      response.content.extract[String]("content") mustEqual s"Successfully pinged service ${licence.context}"
     }
   }
 }

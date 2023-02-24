@@ -44,7 +44,7 @@ object Bootstrap extends TwitterServer with DatastoreConfig
 
   def main(): Unit = {
     val server = Http.server
-      .configured(Label(s"https/${api.name}"))
+      .configured(Label(s"https/${api.context}"))
       .withStatsReceiver(statsReceiver)
       .withResponseClassifier(HttpResponseClassifier.ServerErrorsAsFailures)
       .withHttpStats

@@ -18,12 +18,12 @@ trait HealthEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol
   protected def healthLicence(implicit ec: ExecutionContext, ev: SttpBackend[Future, Nothing]): Endpoint[Response] =
     get(healthPath :: licence.name) {
       // TODO - Remove hardcoding
-      val request: Request[String, Nothing] = sttp.get(uri"http://${licence.name}:${licence.uri.getPort}/${licence.name}/2/health")
+      val request: Request[String, Nothing] = sttp.get(uri"http://${licence.name}:${licence.uri.getPort}/${licence.context}/2/health")
       request.send().map(r => Response(r.unsafeBody.parseJson)).toTFuture
     }
 
   protected def health: Endpoint[Response] =
     get(healthPath) {
-      Response(s"Successfully pinged service ${api.name}").toTFuture
+      Response(s"Successfully pinged service ${api.context}").toTFuture
     }
 }
