@@ -83,10 +83,44 @@ responses:
       $ref: '#/definitions/ApiResponse'
 
 paths:
+  /health/licence:
+    get:
+      tags:
+        - envs
+      summary: System health of dependent system "licence"
+      operationId: get_licent_health
+      description: ''
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
+  /health:
+    get:
+      tags:
+        - envs
+      summary: System health
+      operationId: get_health
+      description: ''
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/IdForName'
+        '500':
+          $ref: '#/responses/500'
+
   /env:
     post:
       tags:
-        - env
+        - envs
       summary: Create a Env
       operationId: create_env
       description: ''
