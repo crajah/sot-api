@@ -44,10 +44,10 @@ spec:
           resources:
             requests:
               memory: "8Gi"
-              cpu: "4"
+              cpu: "2"
             limits:
               memory: "12Gi"
-              cpu: "8"
+              cpu: "4"
           imagePullPolicy: IfNotPresent
           env:
             - name: AWS_SECRET_ACCESS_KEY
