@@ -11,17 +11,17 @@ spec:
     app: sot-api
     role: backend
   type: LoadBalancer
-  #sessionAffinity: None
+  sessionAffinity: ClientIP
   ports:
     - name: http
       port: 80
-      targetPort: 8080
+      targetPort: http
       protocol: TCP
     - name: https
       port: 443
       targetPort: 443
       protocol: TCP
     - name: admin
-      port: 9990
-      targetPort: 9990
+      port: 9092
+      targetPort: admin
       protocol: TCP

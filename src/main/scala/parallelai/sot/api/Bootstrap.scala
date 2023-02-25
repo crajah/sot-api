@@ -21,7 +21,7 @@ object Bootstrap extends TwitterServer with DatastoreConfig
   with HealthEndpoints with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints
   with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints {
 
-  // val port: Flag[Int] = flag("port", 8881 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
+  // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
 
   implicit val backend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 

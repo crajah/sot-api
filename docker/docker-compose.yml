@@ -6,8 +6,8 @@ sot-licence:
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
   ports:
-    - "8881:8881"
-    - "9991:9991"
+    - "8081:8081"
+    - "9091:9091"
 
 sot-api:
   image: parallelai/sot-api:latest
@@ -17,7 +17,7 @@ sot-api:
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
   ports:
-    - "8880:8880"
-    - "9990:9990"
+    - "8082:8082"
+    - "9092:9092"
   links:
     - sot-licence

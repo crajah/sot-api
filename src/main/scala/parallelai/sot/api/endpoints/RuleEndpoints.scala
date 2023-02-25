@@ -23,7 +23,7 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions with Ba
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
   /**
-   * curl -v -X PUT http://localhost:8880/sot-api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
+   * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
    */
   lazy val buildRule: Endpoint[Response] =
     put(rulePath :: "build" :: jsonBody[JsValue]) { ruleJson: JsValue =>
@@ -34,7 +34,7 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions with Ba
     }
 
   /**
-   * curl -v -X PUT http://localhost:8880/sot-api/2/rule/compose -H "Content-Type: application/json" -d '{ "id": "my-dag", "version": "2" }'
+   * curl -v -X PUT http://localhost:8082/api/2/rule/compose -H "Content-Type: application/json" -d '{ "id": "my-dag", "version": "2" }'
    */
   lazy val buildDag: Endpoint[Response] =
     put(rulePath :: "compose" :: jsonBody[JsValue]) { dagJson: JsValue =>
@@ -52,7 +52,7 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions with Ba
     }
 
   /**
-   * curl -v -X GET "http://localhost:8880/sot-api/2/rule/my-rule/status"
+   * curl -v -X GET "http://localhost:8082/api/2/rule/my-rule/status"
    */
   lazy val ruleStatus: Endpoint[Response] =
     get(rulePath :: path[String] :: "status") { ruleId: String =>

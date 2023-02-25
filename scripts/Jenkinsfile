@@ -37,7 +37,6 @@ node ("docker_slave") {
       "END_POINT_SERVICE": "${appName}.${environment}.endpoints.bi-crm-poc.cloud.goog",
       "END_POINT_SERVICE_VERSION": sh(returnStdout: true, script: endPointServiceVersion).trim(),
       "API_IMAGE": imageTag,
-      "API_HOST": "${appName}.${environment}",
       "EXECUTOR_DAO_PREFIX": environment
     ])
 

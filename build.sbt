@@ -144,14 +144,14 @@ dockerfile in docker := {
   val artifactTargetPath = s"/app/${artifact.name}"
 
   /**
-    * docker run --rm -it -p 8880:8880 -p 9990:9990 -v ~/.aws/credentials:/root/.aws/credentials:ro -v ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials -e GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials --name sot-api parallelai/sot-api
+    * docker run --rm -it -p 8082:8082 -p 9092:9092 -v ~/.aws/credentials:/root/.aws/credentials:ro -v ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials -e GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials --name sot-api parallelai/sot-api
     */
   new Dockerfile {
     from("hseeberger/scala-sbt")
     env("SCALA_VERSION", scala_2_12)
     env("SBT_VERSION", sbt_1_1_1)
-    expose(8880)
-    expose(9990)
+    expose(8082)
+    expose(9092)
     volume("/executor")
     add(artifact, artifactTargetPath)
     entryPoint("java", "-Xms1024m", "-Xmx2048m", "-jar", artifactTargetPath)

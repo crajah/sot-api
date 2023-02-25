@@ -22,13 +22,15 @@ spec:
           args: [
             "--http_port=8080",
             "--ssl_port", "443",
-            "--backend=127.0.0.1:8880",
+            "--backend=127.0.0.1:8082",
             "--service=${END_POINT_SERVICE}",
             "--version=${END_POINT_SERVICE_VERSION}",
           ]
           ports:
-            - containerPort: 8080
-            - containerPort: 443
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 443
           volumeMounts:
             - mountPath: /etc/nginx/creds
               name: service-account-creds
@@ -39,8 +41,10 @@ spec:
         - name: sot-api
           image: ${API_IMAGE}
           ports:
-            - containerPort: 8880
-            - containerPort: 9990
+            - name: http
+              containerPort: 8082
+            - name: admin
+              containerPort: 9092
           resources:
             requests:
               memory: "8Gi"
