@@ -55,6 +55,11 @@ spec:
           env:
             - name: LICENCE_PORT
               value: "80"
+            - name: LICENCE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: licence-api-key
+                  key: LICENCE_API_KEY
             - name: AWS_SECRET_ACCESS_KEY
               value: w2lFZ4umi6Bw3BHjtfhh68caj1rkxx0CggLXsMMK
             - name: AWS_ACCESS_KEY_ID
