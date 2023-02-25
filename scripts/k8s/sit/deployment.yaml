@@ -54,6 +54,8 @@ spec:
               cpu: "8"
           imagePullPolicy: IfNotPresent
           env:
+            - name: LICENCE_PORT
+              value: "80"
             - name: AWS_SECRET_ACCESS_KEY
               value: w2lFZ4umi6Bw3BHjtfhh68caj1rkxx0CggLXsMMK
             - name: AWS_ACCESS_KEY_ID
