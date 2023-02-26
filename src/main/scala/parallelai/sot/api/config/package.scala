@@ -23,7 +23,7 @@ package object config extends Logging {
 
   lazy val licence: Licence = {
     val e = load[Licence]("licence")
-    info(s"Licence configuration: ${e.lens(_.apiKey).composePrism(some).set("<masked api key>")}")
+    info(s"Licence configuration: ${e.lens(_.apiKey) composePrism some set "<masked api key>"}")
     e
   }
 

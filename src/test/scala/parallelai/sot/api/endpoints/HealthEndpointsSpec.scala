@@ -15,14 +15,14 @@ import parallelai.sot.api.config._
 
 class HealthEndpointsSpec extends WordSpec with MustMatchers {
   "Health endpoints" should {
-    "indicate a healthy application" in new HealthEndpoints {
+    "indicate a healthy service" in new HealthEndpoints {
       val Some(response) = health(get(p"/$healthPath")).awaitValueUnsafe()
 
       response.status mustEqual Status.Ok
       response.content.convertTo[String] mustEqual s"Successfully pinged service ${api.name}"
     }
 
-    "indicate a healthy API Server application" in new HealthEndpoints {
+    "indicate a healthy licence service" in new HealthEndpoints {
       implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
         .whenRequestMatches(req => req.uri.host.contains(licence.name) && req.uri.path.startsWith(Seq(licence.context, "2", "health")))
         .thenRespond(Response(s"Successfully pinged service ${licence.name}").toJson.prettyPrint)

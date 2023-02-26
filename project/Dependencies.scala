@@ -7,7 +7,7 @@ object Dependencies {
   val twitterBijectionVersion = "0.9.6"
   val twitterVersion = "18.2.0"
   val finchVersion = "0.17.0"
-  val sttpVersion = "1.1.6"
+  val sttpVersion = "1.1.8"
   val gatlingVersion = "2.2.5"
   val monocleVersion = "1.5.0"
 
@@ -50,14 +50,15 @@ object Dependencies {
   val finchSprayJson = "com.github.finagle" %% "finch-sprayjson" % finchVersion
   val finchOAuth2 = "com.github.finagle" %% "finch-oauth2" % "0.16.1"
 
-  val sprayJson = "io.spray" %%  "spray-json" % "1.3.3"
+  val sprayJson = "io.spray" %%  "spray-json" % "1.3.4"
   val sprayJsonShapeless = "com.github.fommil" %% "spray-json-shapeless" % "1.3.0"
   val jsonLenses = "net.virtual-void" %%  "json-lenses" % "0.6.2"
 
   val betterFiles = "com.github.pathikrit" %% "better-files" % "3.4.0"
 
   val sttp = "com.softwaremill.sttp" %% "core" % sttpVersion
-  val sttpOkhttp = "com.softwaremill.sttp" %% "okhttp-backend" % sttpVersion
+  val sttpOkhttpBackend = "com.softwaremill.sttp" %% "okhttp-backend" % sttpVersion
+  val sttpMonixBackend = "com.softwaremill.sttp" %% "async-http-client-backend-monix" % sttpVersion
 
   val gatlingHighcharts = "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion
   val gatlingTestFramework = "io.gatling" % "gatling-test-framework" % gatlingVersion

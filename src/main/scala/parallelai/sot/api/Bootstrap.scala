@@ -19,7 +19,7 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
 object Bootstrap extends TwitterServer with DatastoreConfig
   with HealthEndpoints with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints
-  with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints {
+  with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints with ProductEndpoints {
 
   // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
 
@@ -27,7 +27,7 @@ object Bootstrap extends TwitterServer with DatastoreConfig
 
   val service: Service[Request, Response] = (
     healthEndpoints :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
-    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints).toServiceAs[Application.Json]
+    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: productEndpoints).toServiceAs[Application.Json]
 
   implicit class CorsService(service: Service[Request, Response]) {
     def withCORSSupport: Service[Request, Response] = {
