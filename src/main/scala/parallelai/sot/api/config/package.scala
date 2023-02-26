@@ -3,9 +3,10 @@ package parallelai.sot.api
 import scala.reflect.ClassTag
 import better.files.File
 import grizzled.slf4j.Logging
+import monocle.macros.syntax.lens._
+import monocle.std.option._
 import pureconfig.ConvertHelpers._
 import pureconfig._
-import monocle.macros.syntax.lens._
 
 package object config extends Logging {
   implicit val fileReader: ConfigReader[File] = ConfigReader.fromString[File](catchReadError(File(_)))
@@ -22,7 +23,7 @@ package object config extends Logging {
 
   lazy val licence: Licence = {
     val e = load[Licence]("licence")
-    info(s"Licence configuration: ${e.lens(_.apiKey).set(Option("<masked api key>"))}")
+    info(s"Licence configuration: ${e.lens(_.apiKey).composePrism(some).set("<masked api key>")}")
     e
   }
 
