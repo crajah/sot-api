@@ -3,6 +3,7 @@ package parallelai.sot.api.endpoints
 import scala.collection.mutable.ArrayOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Success
 import io.finch.{ Application, Endpoint }
 import io.finch.Input._
 import spray.json._
@@ -13,21 +14,26 @@ import com.softwaremill.sttp.{ Response => _ }
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ AsArray, EncryptedBytes, ProductRegister }
+import parallelai.sot.api.entities.{ Organisation, ProductRegister }
 import io.finch.sprayjson._
 import parallelai.common.secure.CryptoMechanic
+import parallelai.common.secure.model.EncryptedBytes
 import parallelai.sot.api.config.secret
+import org.scalatest.TryValues._
 
 class ProductEndpointsSpec extends WordSpec with MustMatchers {
+  implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
+
   "Licence endpoints" should {
     "register product" in new ProductEndpoints {
       implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
 
       val registerProduct: Endpoint[Response] = super.registerProduct
 
-      implicit val crypto = new CryptoMechanic(secret = secret.getBytes)
+      val organisation = Organisation("org-id", "org-code", "org@gmail.com")
+      val encryptedProductToken = EncryptedBytes(organisation)
 
-      val productRegister = ProductRegister(EncryptedBytes("my product token"))
+      val productRegister = ProductRegister(organisation, encryptedProductToken)
 
       val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](productRegister)).awaitValueUnsafe()
 
@@ -37,10 +43,12 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers {
 
       val licenceHealth: Endpoint[Response] = super.licenceHealth
 
-      val Some(response) = licenceHealth(get(p"/$healthPath/${licence.context}")).awaitValueUnsafe()
+      val Some(response) = licenceHealth(get(p"/$healthPath/${licence.context}")).awaitValueUnsafe()*/
 
       response.status mustEqual Status.Ok
-      response.content.extract[String]("content") mustEqual s"Successfully pinged service ${licence.name}"*/
+
+      response.content.convertTo[ProductRegister] must have(
+        'organisation(organisation))
     }
   }
 }

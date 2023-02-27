@@ -21,7 +21,7 @@ trait ProductEndpoints extends BasePath with EndpointOps with Logging {
       /*val request: Request[String, Nothing] = sttp get uri"http://${licence.name}:${licence.port}/${licence.context}/${licence.version}/health?key=${licence.apiKey}"
       request.send().map(r => Response(r.unsafeBody.parseJson)).toTFuture*/
 
-      println(s"===> ${new String(productRegister.productToken.value)}")
+      println(s"===> $productRegister")
 
       Response(productRegister).toTFuture
     }
