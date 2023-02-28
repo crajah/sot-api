@@ -121,6 +121,7 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       sttp,
       sttpOkhttpBackend,
       sttpMonixBackend,
+      sttpCirce,
       monocleCore,
       monocleMacro
     ),

@@ -7,7 +7,7 @@ object Dependencies {
   val twitterBijectionVersion = "0.9.6"
   val twitterVersion = "18.2.0"
   val finchVersion = "0.17.0"
-  val sttpVersion = "1.1.8"
+  val sttpVersion = "1.1.9"
   val gatlingVersion = "2.2.5"
   val monocleVersion = "1.5.0"
 
@@ -59,6 +59,7 @@ object Dependencies {
   val sttp = "com.softwaremill.sttp" %% "core" % sttpVersion
   val sttpOkhttpBackend = "com.softwaremill.sttp" %% "okhttp-backend" % sttpVersion
   val sttpMonixBackend = "com.softwaremill.sttp" %% "async-http-client-backend-monix" % sttpVersion
+  val sttpCirce = "com.softwaremill.sttp" %% "circe" % sttpVersion
 
   val gatlingHighcharts = "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion
   val gatlingTestFramework = "io.gatling" % "gatling-test-framework" % gatlingVersion
