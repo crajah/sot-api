@@ -20,8 +20,7 @@ trait HealthEndpoints extends EndpointOps with DefaultJsonProtocol with Logging 
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
     get(healthPath :: licence.context) {
-      // TODO - Remove hardcoding
-      val request: Request[String, Nothing] = sttp get uri"http://${licence.name}:${licence.port}/${licence.context}/${licence.version}/health?key=${licence.apiKey}"
+      val request: Request[String, Nothing] = sttp get uri"${licence.uri}/health?key=${licence.apiKey}" // TODO implicitly add the "key" as it could be easily missed out
       request.send.map(r => Response(r.unsafeBody.parseJson)).toTFuture
     }
   }

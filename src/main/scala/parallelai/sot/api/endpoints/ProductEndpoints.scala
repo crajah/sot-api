@@ -30,7 +30,7 @@ trait ProductEndpoints extends EndpointOps with DefaultJsonProtocol with DiffeHe
       val productRegister = pr.lens(_.dhkeClientPublicKey) set Option(Encrypted(clientPublicKey))
 
       val request: Request[String, Nothing] =
-        sttp post uri"${licence.uri}/product/register?key=${licence.apiKey}" body productRegister
+        sttp post uri"${licence.uri}/product/register?key=${licence.apiKey}" body productRegister // TODO implicitly add the "key" as it could be easily missed out
 
       request.send.map(r => Response(r.unsafeBody.parseJson)).toTFuture
     }
