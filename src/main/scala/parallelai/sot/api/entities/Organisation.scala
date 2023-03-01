@@ -4,7 +4,7 @@ import io.circe.{ Decoder, Encoder }
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import org.apache.commons.lang.SerializationUtils._
-import parallelai.common.secure.model.ToBytes
+import parallelai.common.secure.ToBytes
 
 case class Organisation(id: String, code: String, email: String)
 

@@ -4,18 +4,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import io.finch.Input._
 import io.finch.sprayjson._
-import io.finch.{Application, Endpoint}
+import io.finch.{ Application, Endpoint }
 import spray.json._
 import spray.json.lenses.JsonLenses._
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{ MustMatchers, WordSpec }
 import com.softwaremill.sttp.testing.SttpBackendStub
-import com.softwaremill.sttp.{Request, StringBody, Response => _}
+import com.softwaremill.sttp.{ Request, StringBody }
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.CryptoMechanic
-import parallelai.common.secure.model.EncryptedBytes
+import parallelai.common.secure.{ CryptoMechanic, Encrypted }
 import parallelai.sot.api.actions.Response
-import parallelai.sot.api.config.{secret, _}
-import parallelai.sot.api.entities.{Organisation, ProductRegister}
+import parallelai.sot.api.config.{ secret, _ }
+import parallelai.sot.api.entities.{ Organisation, ProductRegister }
 import parallelai.sot.api.json.JsonLens._
 
 class ProductEndpointsSpec extends WordSpec with MustMatchers {
@@ -37,15 +36,13 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers {
       lazy val registerProduct: Endpoint[Response] = super.registerProduct
 
       lazy val organisation = Organisation("org-id", "org-code", "org@gmail.com")
-      lazy val encryptedProductToken = EncryptedBytes(organisation)
+      lazy val encryptedProductToken = Encrypted(organisation)
 
       lazy val productRegister = ProductRegister(organisation, encryptedProductToken)
 
-      implicit val backend: SttpBackendStub[Future, Nothing] = {
-        SttpBackendStub.asynchronousFuture
-          .whenRequestMatches(req => hostExpectation(req) && pathExpectation(req) && bodyExpectation(req))
-          .thenRespond(Response(productRegister).toJson.prettyPrint)
-      }
+      implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
+        .whenRequestMatches(req => hostExpectation(req) && pathExpectation(req) && bodyExpectation(req))
+        .thenRespond(Response(productRegister).toJson.prettyPrint)
 
       val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](productRegister)).awaitValueUnsafe()
 
