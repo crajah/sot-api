@@ -10,11 +10,12 @@ import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.common.persist.Identity
 import parallelai.sot.api.actions.Response
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities.{ Error, Id, _ }
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.executor.model.SOTMacroConfig._
 
-trait StepEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol with DatastoreMappableType with EntityFormats {
+trait StepEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType with EntityFormats {
   this: DatastoreConfig =>
 
   implicit val opTypeIdentity: Identity[OpType] = Identity[OpType](_.id)
@@ -22,7 +23,7 @@ trait StepEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol w
 
   lazy val stepDAO = datastore[OpTypeWrapper] // TODO remove this
 
-  val stepPath: Endpoint[HNil] = basePath :: "step"
+  val stepPath: Endpoint[HNil] = api.path :: "step"
 
   val stepEndpoints = step :+: steps :+: registerStep :+: deleteStep
 

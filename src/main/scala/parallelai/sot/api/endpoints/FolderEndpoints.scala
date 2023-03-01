@@ -12,16 +12,17 @@ import spray.json._
 import org.joda.time.Instant.now
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.Response
-import parallelai.sot.api.entities.{ Error, _ }
+import parallelai.sot.api.config._
+import parallelai.sot.api.entities.{ Error, Folder, _ }
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
-trait FolderEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
+trait FolderEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
   this: DatastoreConfig =>
 
   // TODO - This should not be here
   lazy val folderDAO = datastore[Folder]
 
-  val folderPath: Endpoint[HNil] = basePath :: "folder"
+  val folderPath: Endpoint[HNil] = api.path :: "folder"
 
   val folderEndpoints = folder :+: folders :+: createFolder :+: deleteFolder
 

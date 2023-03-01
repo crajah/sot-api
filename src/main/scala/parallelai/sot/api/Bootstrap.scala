@@ -12,7 +12,6 @@ import com.twitter.finagle.param.Label
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.{ Http, Service }
 import com.twitter.util.Await
-import parallelai.sot.api.concurrent.ExecutionContexts._
 import parallelai.sot.api.config.api
 import parallelai.sot.api.endpoints._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig

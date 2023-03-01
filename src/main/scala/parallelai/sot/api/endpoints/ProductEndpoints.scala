@@ -1,6 +1,6 @@
 package parallelai.sot.api.endpoints
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import grizzled.slf4j.Logging
 import io.finch._
 import io.finch.sprayjson._
@@ -16,20 +16,23 @@ import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities.ProductRegister
 
-trait ProductEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol with DiffeHellmanClient with Logging {
+trait ProductEndpoints extends EndpointOps with DefaultJsonProtocol with DiffeHellmanClient with Logging {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
 
-  val productPath: Endpoint[HNil] = basePath :: "product"
+  val productPath: Endpoint[HNil] = api.path :: "product"
 
-  def productEndpoints(implicit ec: WebServiceExecutionContext, ev: SttpBackend[Future, Nothing]) = registerProduct
+  def productEndpoints(implicit sb: SttpBackend[Future, Nothing]) = registerProduct
 
-  protected def registerProduct(implicit ec: ExecutionContext, ev: SttpBackend[Future, Nothing]): Endpoint[Response] =
+  protected def registerProduct(implicit sb: SttpBackend[Future, Nothing]): Endpoint[Response] = {
+    implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
+
     post(productPath :: "register" :: jsonBody[ProductRegister]) { pr: ProductRegister =>
       val productRegister = pr.lens(_.dhkeClientPublicKey) set Option(Encrypted(clientPublicKey))
 
       val request: Request[String, Nothing] =
-        sttp post uri"http://${licence.name}:${licence.port}/${licence.context}/${licence.version}/product/register?key=${licence.apiKey}" body productRegister
+        sttp post uri"${licence.uri}/product/register?key=${licence.apiKey}" body productRegister
 
       request.send.map(r => Response(r.unsafeBody.parseJson)).toTFuture
     }
+  }
 }

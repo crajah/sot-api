@@ -13,16 +13,17 @@ import shapeless.datatype.datastore._
 import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{ DagActions, Response }
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities.{ Error, Id, _ }
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.identity.IdGenerator
 import parallelai.sot.api.time.Time
 import parallelai.sot.executor.model.SOTMacroConfig._
 
-trait SchemaEndpoints extends BasePath with EndpointOps with DagActions with IdGenerator with EntityFormats with DatastoreMappableType with Time with Logging {
+trait SchemaEndpoints extends EndpointOps with DagActions with IdGenerator with EntityFormats with DatastoreMappableType with Time with Logging {
   this: DatastoreConfig =>
 
-  val schemaPath: Endpoint[HNil] = basePath :: "schema"
+  val schemaPath: Endpoint[HNil] = api.path :: "schema"
 
   val schemaEndpoints = schema :+: schemas :+: registerSchema :+: deleteSchema
 

@@ -1,6 +1,5 @@
 package parallelai.sot.api.endpoints
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import io.finch.Input._
 import io.finch.sprayjson._

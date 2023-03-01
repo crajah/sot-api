@@ -6,13 +6,14 @@ import io.finch.syntax._
 import shapeless.HNil
 import spray.json._
 import parallelai.sot.api.actions.{ Response, VersionActions }
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities.{ Version, VersionActive }
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
-trait VersionEndpoints extends EndpointOps with VersionActions with BasePath with DefaultJsonProtocol {
+trait VersionEndpoints extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
 
-  val versionPath: Endpoint[HNil] = basePath :: "version"
+  val versionPath: Endpoint[HNil] = api.path :: "version"
 
   lazy val versionEndpoints = postVersion :+: versions :+: refreshVersion :+: deleteVersion :+: activeVersion :+: allActiveVersions
 

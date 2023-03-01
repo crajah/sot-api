@@ -11,14 +11,15 @@ import spray.json.lenses.JsonLenses._
 import spray.json.{ JsValue, _ }
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{ DagActions, Response, RuleActions }
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.json.JsonLens._
 
-trait RuleEndpoints extends EndpointOps with RuleActions with DagActions with BasePath {
+trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
 
-  val rulePath: Endpoint[HNil] = basePath :: "rule"
+  val rulePath: Endpoint[HNil] = api.path :: "rule"
 
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 

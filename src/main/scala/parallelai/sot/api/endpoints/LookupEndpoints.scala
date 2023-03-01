@@ -9,18 +9,19 @@ import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json.{ DefaultJsonProtocol, _ }
 import parallelai.common.persist.Identity
 import parallelai.sot.api.actions.Response
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities.EntityFormats
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.executor.model.SOTMacroConfig.DatastoreLookupDefinition
 
-trait LookupEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol with DatastoreMappableType with EntityFormats with CollectionFormats {
+trait LookupEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType with EntityFormats with CollectionFormats {
   this: DatastoreConfig =>
 
   implicit val lookupIdentity: Identity[DatastoreLookupDefinition] = Identity[DatastoreLookupDefinition](_.id)
 
   lazy val lookupDAO: ApiDatastore[DatastoreLookupDefinition] = datastore[DatastoreLookupDefinition]
 
-  val lookupPath: Endpoint[HNil] = basePath :: "lookup"
+  val lookupPath: Endpoint[HNil] = api.path :: "lookup"
 
   val lookupEndpoints = lookups :+: registerLookup
 

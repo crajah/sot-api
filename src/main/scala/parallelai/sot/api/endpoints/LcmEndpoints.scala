@@ -12,19 +12,20 @@ import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json.DefaultJsonProtocol
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.Response
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities.Job._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.mechanics.DataflowMechanic
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 
-trait LcmEndpoints extends BasePath with DataflowMechanic with EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
+trait LcmEndpoints extends DataflowMechanic with EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
   this: DatastoreConfig =>
 
   // TODO - This should not be here
   lazy val lcmEnvDAO = datastore[Environment]
 
-  val lcmPath: Endpoint[HNil] = basePath :: "rule"
+  val lcmPath: Endpoint[HNil] = api.path :: "rule"
 
   val lcmEndpoints: Endpoint[Response] =
     put(lcmPath :: "stop" :: jsonBody[RuleLcm] :: paramOption("cancel")) { (ruleLcm: RuleLcm, cancel: Option[String]) =>

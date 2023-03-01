@@ -9,16 +9,17 @@ import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json.DefaultJsonProtocol
 import org.joda.time.Instant.now
 import parallelai.sot.api.actions.Response
+import parallelai.sot.api.config._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
-trait EnvEndpoints extends BasePath with EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
+trait EnvEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
   this: DatastoreConfig =>
 
   // TODO - This should not be here
   lazy val environmentDAO = datastore[Environment]
 
-  val envPath: Endpoint[HNil] = basePath :: "env"
+  val envPath: Endpoint[HNil] = api.path :: "env"
 
   lazy val envEndpoints = environment :+: environments :+: loadEnvironment :+: deleteEnvironment
 
