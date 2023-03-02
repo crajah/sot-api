@@ -18,7 +18,7 @@ import parallelai.sot.api.config._
 import parallelai.sot.api.entities.ProductRegister
 import spray.json.lenses.JsonLenses._
 
-trait ProductEndpoints extends EndpointOps with DefaultJsonProtocol with Logging {
+trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
 
   val productPath: Endpoint[HNil] = api.path :: "product"
@@ -32,7 +32,7 @@ trait ProductEndpoints extends EndpointOps with DefaultJsonProtocol with Logging
       val productRegister = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
       val request: Request[String, Nothing] =
-        sttp post uri"${licence.uri}/product/register?key=${licence.apiKey}" body productRegister // TODO implicitly add the "key" as it could be easily missed out
+        sttp post licenceUri"/product/register" body productRegister
 
       request.send.map { response =>
         val serverPublicKey = response.unsafeBody.parseJson.extract[ServerPublicKey]("content")

@@ -11,7 +11,7 @@ import parallelai.sot.api.actions.Response
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 
-trait HealthEndpoints extends EndpointOps with DefaultJsonProtocol with Logging {
+trait HealthEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
   val healthPath: Endpoint[HNil] = api.path :: "health"
 
   def healthEndpoints(implicit sb: SttpBackend[Future, Nothing]) = licenceHealth :+: health
@@ -20,7 +20,7 @@ trait HealthEndpoints extends EndpointOps with DefaultJsonProtocol with Logging 
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
     get(healthPath :: licence.context) {
-      val request: Request[String, Nothing] = sttp get uri"${licence.uri}/health?key=${licence.apiKey}" // TODO implicitly add the "key" as it could be easily missed out
+      val request: Request[String, Nothing] = sttp get licenceUri"/health"
       request.send.map(r => Response(r.unsafeBody.parseJson)).toTFuture
     }
   }
