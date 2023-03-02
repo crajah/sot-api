@@ -66,6 +66,4 @@ object Dependencies {
 
   val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % monocleVersion
   val monocleMacro = "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion
-
-  val booPickle = "io.suzaku" %% "boopickle" % "1.2.6"
 }
