@@ -52,6 +52,7 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers {
 
       response.status mustEqual Status.Ok
 
+      // TODO - WIP
       println(response.content.prettyPrint)
 
       /*response.content.extract[ProductRegister]("content") must matchPattern {
