@@ -1,6 +1,6 @@
 package parallelai.sot.api.entities
 
-import io.circe.{ Decoder, Encoder }
+import io.circe.{Decoder, Encoder}
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import org.apache.commons.lang.SerializationUtils._
