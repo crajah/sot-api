@@ -3,17 +3,17 @@ package parallelai.sot.api.endpoints
 import scala.concurrent.Future
 import io.finch.Input._
 import io.finch.sprayjson._
-import io.finch.{ Application, Endpoint }
+import io.finch.{Application, Endpoint}
 import spray.json._
 import spray.json.lenses.JsonLenses._
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
-import com.softwaremill.sttp.{ Request, StringBody }
+import com.softwaremill.sttp.{Request, StringBody}
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.{ CryptoMechanic, Encrypted }
+import parallelai.common.secure.{CryptoMechanic, Encrypted}
 import parallelai.sot.api.actions.Response
-import parallelai.sot.api.config.{ secret, _ }
-import parallelai.sot.api.entities.{ Organisation, ProductRegister }
+import parallelai.sot.api.config.{secret, _}
+import parallelai.sot.api.entities.{Organisation, ProductRegister}
 import parallelai.sot.api.json.JsonLens._
 
 class ProductEndpointsSpec extends WordSpec with MustMatchers {
