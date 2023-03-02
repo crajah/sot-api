@@ -123,7 +123,8 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       sttpMonixBackend,
       sttpCirce,
       monocleCore,
-      monocleMacro
+      monocleMacro,
+      commonsLang
     ),
     libraryDependencies ++= Seq(
       sotExecutorModel,

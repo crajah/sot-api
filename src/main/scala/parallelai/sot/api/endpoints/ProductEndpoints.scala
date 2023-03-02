@@ -11,7 +11,7 @@ import spray.json._
 import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
 import parallelai.common.secure.CryptoMechanic
-import parallelai.common.secure.diffiehellman.DiffieHellmanClient
+import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient}
 import parallelai.sot.api.actions.Response
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
@@ -28,12 +28,27 @@ trait ProductEndpoints extends EndpointOps with DefaultJsonProtocol with Logging
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
     post(productPath :: "register" :: jsonBody[ProductRegister]) { pr: ProductRegister =>
-      val productRegister = pr.lens(_.clientPublicKey) set Option(DiffieHellmanClient.createClientPublicKey)
+      val productRegister = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
       val request: Request[String, Nothing] =
         sttp post uri"${licence.uri}/product/register?key=${licence.apiKey}" body productRegister // TODO implicitly add the "key" as it could be easily missed out
 
-      request.send.map(r => Response(r.unsafeBody.parseJson)).toTFuture
+      request.send.map { response =>
+        val x = response.unsafeBody.parseJson
+        println(s"===> x = ${x.prettyPrint}")
+
+        Response(x)
+      }.toTFuture
     }
   }
+
+  protected def createClientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
 }
+
+/*
+val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer.create(DiffieHellmanClient.createClientPublicKey)
+
+val clientSharedSecret: ClientSharedSecret = DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+
+clientSharedSecret.value mustEqual serverSharedSecret.value
+ */
