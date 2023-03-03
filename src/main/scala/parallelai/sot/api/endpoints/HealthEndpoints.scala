@@ -5,9 +5,8 @@ import grizzled.slf4j.Logging
 import io.finch._
 import io.finch.syntax._
 import shapeless.HNil
-import spray.json.{ DefaultJsonProtocol, _ }
+import spray.json.{DefaultJsonProtocol, _}
 import com.softwaremill.sttp._
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 

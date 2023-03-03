@@ -6,9 +6,8 @@ import io.finch.sprayjson._
 import io.finch.syntax._
 import shapeless.HNil
 import shapeless.datatype.datastore.DatastoreMappableType
-import spray.json.{ DefaultJsonProtocol, _ }
+import spray.json.{DefaultJsonProtocol, _}
 import parallelai.common.persist.Identity
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities.EntityFormats
 import parallelai.sot.api.gcp.datastore.DatastoreConfig

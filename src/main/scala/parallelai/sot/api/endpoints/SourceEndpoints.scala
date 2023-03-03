@@ -8,10 +8,10 @@ import shapeless.HNil
 import shapeless.datatype.datastore._
 import spray.json._
 import org.joda.time.Instant.now
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model.Id
 
 @deprecated(message = "I believe this is no longer used", since = "2nd March 2018")
 trait SourceEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {

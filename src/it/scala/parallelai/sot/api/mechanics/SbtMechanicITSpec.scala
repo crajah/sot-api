@@ -9,8 +9,8 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
-import parallelai.sot.api.actions.ResponseException
 import parallelai.sot.api.config._
+import parallelai.sot.api.endpoints.ResponseException
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture

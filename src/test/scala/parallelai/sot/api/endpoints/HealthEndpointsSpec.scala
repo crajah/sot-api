@@ -5,11 +5,10 @@ import io.finch.Endpoint
 import io.finch.Input._
 import spray.json._
 import spray.json.lenses.JsonLenses._
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
-import com.softwaremill.sttp.{ Response => _ }
+import com.softwaremill.sttp.{Response => _}
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
 
 class HealthEndpointsSpec extends WordSpec with MustMatchers {

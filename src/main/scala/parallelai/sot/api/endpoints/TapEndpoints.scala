@@ -10,10 +10,11 @@ import shapeless.HNil
 import shapeless.datatype.datastore._
 import spray.json._
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ DagActions, Response }
+import parallelai.sot.api.actions.DagActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ Error, Id, _ }
+import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model.Id
 import parallelai.sot.executor.model.SOTMacroConfig._
 
 trait TapEndpoints extends EndpointOps with DagActions with DatastoreMappableType with EntityFormats with Logging {

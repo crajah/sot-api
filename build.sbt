@@ -81,6 +81,7 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       gatlingTestFramework % "it"
     ),
     libraryDependencies ++= Seq(
+      sotApiCommon % "test" classifier "tests",
       sotContainers % "it" classifier "it"
     ),
     excludeDependencies ++= Seq(
@@ -127,10 +128,10 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       commonsLang
     ),
     libraryDependencies ++= Seq(
+      sotApiCommon,
+      sotCommonSecure,
       sotExecutorModel,
       sotCommonPersist,
-      sotCommon,
-      sotCommonSecure,
       sotGcp
     )
   )

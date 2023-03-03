@@ -8,12 +8,13 @@ import spray.json._
 import com.google.api.services.dataflow.model
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
+import parallelai.sot.api.endpoints.{Error, Response}
 import parallelai.sot.api.entities.Job._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.identity.IdGenerator
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics._
+import parallelai.sot.api.model.IdGenerator
 
 trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenerator
   with GitMechanic with SbtMechanic with ConfigMechanic with StatusMechanic with LaunchMechanic with GoogleStorageMechanic with DataflowMechanic {

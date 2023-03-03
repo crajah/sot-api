@@ -14,7 +14,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.entities.{Error, GitVersion, Version}
+import parallelai.sot.api.entities.{GitVersion, Version}
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture

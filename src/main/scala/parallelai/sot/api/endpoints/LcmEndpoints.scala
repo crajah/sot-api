@@ -11,7 +11,6 @@ import shapeless.HNil
 import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json.DefaultJsonProtocol
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities.Job._
 import parallelai.sot.api.entities._

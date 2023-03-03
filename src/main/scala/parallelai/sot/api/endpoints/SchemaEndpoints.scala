@@ -8,15 +8,15 @@ import grizzled.slf4j.Logging
 import io.finch._
 import io.finch.sprayjson._
 import io.finch.syntax._
-import shapeless._
 import shapeless.datatype.datastore._
+import shapeless.{Id => _, _}
 import spray.json._
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ DagActions, Response }
+import parallelai.sot.api.actions.DagActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ Error, Id, _ }
+import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.identity.IdGenerator
+import parallelai.sot.api.model.{Id, IdGenerator}
 import parallelai.sot.api.time.Time
 import parallelai.sot.executor.model.SOTMacroConfig._
 

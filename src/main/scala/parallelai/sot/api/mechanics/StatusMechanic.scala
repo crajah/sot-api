@@ -3,7 +3,7 @@ package parallelai.sot.api.mechanics
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.sys.process.ProcessLogger
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 import better.files._
 import cats.data.EitherT
 import cats.implicits._
@@ -15,8 +15,8 @@ import spray.json._
 import org.slf4j.event.Level
 import org.slf4j.event.Level._
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ Response, ResponseException }
 import parallelai.sot.api.disjunction.EitherOps
+import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 

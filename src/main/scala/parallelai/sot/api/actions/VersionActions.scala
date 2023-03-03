@@ -1,12 +1,13 @@
 package parallelai.sot.api.actions
 
-import scala.concurrent.{ ExecutionContext, Future, blocking }
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import cats.implicits._
 import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.FileExcecutionContext
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.entities.{ GitVersion, Version, VersionActive, Versions, _ }
+import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
+import parallelai.sot.api.entities.{GitVersion, Version, VersionActive, Versions}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.mechanics.GitMechanic
 

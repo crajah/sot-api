@@ -6,13 +6,14 @@ import cats.implicits._
 import io.finch._
 import io.finch.sprayjson._
 import io.finch.syntax._
-import shapeless._
 import shapeless.datatype.datastore._
+import shapeless.{Id => _, _}
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ DagActions, Response, RuleActions }
+import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ Error, Id, _ }
+import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model.Id
 
 trait DagEndpoints extends EndpointOps with EntityFormats with DatastoreMappableType with RuleActions with DagActions {
   this: DatastoreConfig =>

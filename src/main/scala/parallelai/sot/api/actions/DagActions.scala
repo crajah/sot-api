@@ -9,7 +9,8 @@ import shapeless.LabelledGeneric.Aux
 import shapeless._
 import shapeless.datatype.datastore._
 import parallelai.common.persist.Identity
-import parallelai.sot.api.entities.{ TapWrapper, _ }
+import parallelai.sot.api.endpoints.Error
+import parallelai.sot.api.entities.{TapWrapper, _}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.executor.model.SOTMacroConfig._
 

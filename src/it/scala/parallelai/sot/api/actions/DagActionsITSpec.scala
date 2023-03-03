@@ -7,6 +7,7 @@ import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
+import parallelai.sot.api.endpoints.Error
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.containers.ForAllContainersFixture

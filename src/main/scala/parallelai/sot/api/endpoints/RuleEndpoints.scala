@@ -4,13 +4,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.implicits._
 import io.finch.sprayjson._
-import io.finch.syntax.{ Mapper => _, _ }
-import io.finch.{ Error => _, Input => _, _ }
+import io.finch.syntax.{Mapper => _, _}
+import io.finch.{Error => _, Input => _, _}
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
-import spray.json.{ JsValue, _ }
+import spray.json.{JsValue, _}
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ DagActions, Response, RuleActions }
+import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig

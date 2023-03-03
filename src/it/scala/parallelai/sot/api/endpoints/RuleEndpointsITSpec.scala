@@ -19,8 +19,8 @@ import parallelai.sot.api.config.baseDirectory
 import parallelai.sot.api.entities.Files._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
-import parallelai.sot.api.identity.IdGenerator99UniqueSuffix
 import parallelai.sot.api.mechanics._
+import parallelai.sot.api.model.IdGenerator99UniqueSuffix
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 

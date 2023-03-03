@@ -8,15 +8,14 @@ import io.finch.syntax._
 import monocle.macros.syntax.lens._
 import shapeless.HNil
 import spray.json._
+import spray.json.lenses.JsonLenses._
 import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
 import parallelai.common.secure.CryptoMechanic
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.ProductRegister
-import spray.json.lenses.JsonLenses._
+import parallelai.sot.api.model.ProductRegister
 
 trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)

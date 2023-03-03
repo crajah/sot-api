@@ -1,15 +1,15 @@
 package parallelai.sot.api.mechanics
 
-import scala.concurrent.{ ExecutionContext, Future, blocking }
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.sys.process._
 import scala.util.Try
 import better.files._
 import grizzled.slf4j.Logging
 import org.slf4j.event.Level._
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ Response, ResponseException }
 import parallelai.sot.api.concurrent.SbtExcecutionContext
 import parallelai.sot.api.config.executor
+import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 

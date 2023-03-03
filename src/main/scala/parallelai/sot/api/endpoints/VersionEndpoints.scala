@@ -5,9 +5,9 @@ import io.finch.sprayjson._
 import io.finch.syntax._
 import shapeless.HNil
 import spray.json._
-import parallelai.sot.api.actions.{ Response, VersionActions }
+import parallelai.sot.api.actions.VersionActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ Version, VersionActive }
+import parallelai.sot.api.entities.{Version, VersionActive}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
 trait VersionEndpoints extends EndpointOps with VersionActions with DefaultJsonProtocol {

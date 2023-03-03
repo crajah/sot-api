@@ -1,10 +1,10 @@
 package parallelai.sot.api.json
 
 import scala.collection.immutable.ListMap
-import spray.json.{ JsArray, JsObject, JsString }
-import org.scalatest.{ MustMatchers, WordSpec }
+import spray.json.{JsArray, JsObject, JsString}
+import org.scalatest.{MustMatchers, WordSpec}
 import parallelai.sot.api.entities.JsonFormats
-import parallelai.sot.api.identity.IdGenerator99UniqueSuffix
+import parallelai.sot.api.model.IdGenerator99UniqueSuffix
 import parallelai.sot.executor.model.SOTMacroConfig._
 
 class JsonFormatsSpec extends WordSpec with MustMatchers with JsonFormats with IdGenerator99UniqueSuffix {

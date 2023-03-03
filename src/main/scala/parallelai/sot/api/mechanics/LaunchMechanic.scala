@@ -1,13 +1,14 @@
 package parallelai.sot.api.mechanics
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Future, blocking }
+import scala.concurrent.{Future, blocking}
 import scala.sys.process.Process
 import cats.data.EitherT
 import cats.implicits._
 import shapeless.datatype.datastore._
 import org.slf4j.event.Level.INFO
 import parallelai.sot.api.config.executor
+import parallelai.sot.api.endpoints.Error
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 

@@ -2,8 +2,8 @@ package parallelai.sot.api.entities
 
 import scala.collection.immutable.ListMap
 import spray.json._
-import parallelai.sot.api.identity.IdGenerator
 import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.model.IdGenerator
 import parallelai.sot.executor.model.SOTMacroConfig._
 import parallelai.sot.executor.model.SOTMacroJsonConfig
 

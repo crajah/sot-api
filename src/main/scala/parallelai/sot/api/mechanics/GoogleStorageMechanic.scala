@@ -6,10 +6,10 @@ import scala.concurrent.Future
 import better.files.File
 import org.slf4j.event.Level.INFO
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.storage.{ Bucket, StorageOptions }
+import com.google.cloud.storage.{Bucket, StorageOptions}
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.{ Response, ResponseException }
 import parallelai.sot.api.config.executor
+import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
 import parallelai.sot.api.entities._
 import parallelai.sot.api.file.FileOps
 import parallelai.sot.api.gcp.datastore.DatastoreConfig

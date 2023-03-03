@@ -8,10 +8,10 @@ import shapeless.HNil
 import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json.DefaultJsonProtocol
 import org.joda.time.Instant.now
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
 import parallelai.sot.api.entities._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model.Id
 
 trait EnvEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
   this: DatastoreConfig =>

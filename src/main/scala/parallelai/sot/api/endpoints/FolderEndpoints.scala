@@ -11,10 +11,10 @@ import shapeless.datatype.datastore.DatastoreMappableType
 import spray.json._
 import org.joda.time.Instant.now
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.Response
 import parallelai.sot.api.config._
-import parallelai.sot.api.entities.{ Error, Folder, _ }
+import parallelai.sot.api.entities.Folder
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model.Id
 
 trait FolderEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {
   this: DatastoreConfig =>

@@ -13,8 +13,8 @@ import com.dimafeng.testcontainers.Container
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.entities.EntityFormats
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
-import parallelai.sot.api.identity.IdGenerator99UniqueSuffix
 import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.model.IdGenerator99UniqueSuffix
 import parallelai.sot.api.time.Time2016
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
