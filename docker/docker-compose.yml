@@ -1,23 +1,39 @@
-sot-licence:
-  image: parallelai/sot-licence:latest
-  volumes:
-    - ~/.aws/credentials:/root/.aws/credentials:ro
-    - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
-  environment:
-    GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
-  ports:
-    - "8081:8081"
-    - "9091:9091"
+version: "3.3"
 
-sot-api:
-  image: parallelai/sot-api:latest
-  volumes:
-    - ~/.aws/credentials:/root/.aws/credentials:ro
-    - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
-  environment:
-    GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
-  ports:
-    - "8082:8082"
-    - "9092:9092"
-  links:
-    - sot-licence
+services:
+  fake-smtp:
+      image: gcr.io/bi-crm-poc/parallelai/fake-smtp:latest
+      volumes:
+        - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+        - ./fake-smtp/output:/output
+      environment:
+        GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
+      ports:
+        - "25:25"
+        - "2525:2525"
+
+  sot-licence:
+    image: gcr.io/bi-crm-poc/parallelai/sot-licence:latest
+    volumes:
+      - ~/.aws/credentials:/root/.aws/credentials:ro
+      - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    links:
+      - fake-smtp
+
+  sot-api:
+    image: gcr.io/bi-crm-poc/parallelai/sot-api:latest
+    volumes:
+      - ~/.aws/credentials:/root/.aws/credentials:ro
+      - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
+    ports:
+      - "8082:8082"
+      - "9092:9092"
+    links:
+      - sot-licence

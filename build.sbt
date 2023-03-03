@@ -156,6 +156,7 @@ dockerfile in docker := {
     expose(8082)
     expose(9092)
     volume("/executor")
+    volume("/output")
     add(artifact, artifactTargetPath)
     entryPoint("java", "-Xms1024m", "-Xmx2048m", "-jar", artifactTargetPath)
   }
