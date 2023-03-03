@@ -5,7 +5,7 @@ Installation requirements
 -------------------------
 On Mac:
 ```
-$ brew update && brew install kubernetes-cli && brew install kubectl && brew cask install virtualbox docker minikube
+$ brew update && brew install scala && brew install sbt && brew install kubernetes-cli && brew install kubectl && brew cask install virtualbox docker minikube
 ```
 
 Swagger
