@@ -11,14 +11,14 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
-import parallelai.common.secure.CryptoMechanic
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
+import parallelai.common.secure.{AES, CryptoMechanic}
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.model.Product
 
 trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
-  implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
+  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
 
   val productPath: Endpoint[HNil] = api.path :: "product"
 
@@ -34,11 +34,21 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJ
         sttp post licenceUri"/product/register" body productRegister
 
       request.send.map { response =>
-        val serverPublicKey = response.unsafeBody.parseJson.extract[ServerPublicKey]("content")
-        val clientSharedSecret: ClientSharedSecret = DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
-        println(s"===> x = $clientSharedSecret")
+        val rep = response.body
+        println(s"===> RRRRR $rep")
 
-        Response("")
+        response.body match {
+          case Right(r) =>
+            println(s"===> THE r IS: $r")
+            val serverPublicKey = r.parseJson.extract[ServerPublicKey]("content")
+            val clientSharedSecret: ClientSharedSecret = DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+            println(s"===> x = $clientSharedSecret")
+
+            Response(serverPublicKey)
+
+          case Left(e) =>
+            e.parseJson.convertTo[Response]
+        }
       }.toTFuture
     }
   }
