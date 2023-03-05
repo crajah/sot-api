@@ -13,40 +13,38 @@ import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanCli
 import parallelai.common.secure.{CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.json.JsonLens._
-import parallelai.sot.api.model.{Organisation, ProductRegister}
+import parallelai.sot.api.model.{Product, Token}
 
 class ProductEndpointsSpec extends WordSpec with MustMatchers {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
 
   "Licence endpoints" should {
     "register product" in new ProductEndpoints {
-      val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
+      override protected val createClientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
 
-      override protected def createClientPublicKey: ClientPublicKey = clientPublicKey
+      implicit val backend: SttpBackendStub[Future, Nothing] = {
+        def hostExpectation(r: Request[_, _]): Boolean =
+          r.uri.host.contains(licence.name)
 
-      def hostExpectation(r: Request[_, _]): Boolean =
-        r.uri.host.contains(licence.name)
+        def pathExpectation(r: Request[_, _]): Boolean =
+          r.uri.path.startsWith(Seq(licence.context, licence.version, "product", "register"))
 
-      def pathExpectation(r: Request[_, _]): Boolean =
-        r.uri.path.startsWith(Seq(licence.context, licence.version, "product", "register"))
+        def bodyExpectation(r: Request[_, _]): Boolean = {
+          val json = r.body.asInstanceOf[StringBody].s.parseJson
+          (json / "organisation").isDefined && (json / "productToken").isDefined
+        }
 
-      def bodyExpectation(r: Request[_, _]): Boolean = {
-        val json = r.body.asInstanceOf[StringBody].s.parseJson
-        (json / "organisation").isDefined && (json / "productToken").isDefined
+        SttpBackendStub.asynchronousFuture
+          .whenRequestMatches(req => hostExpectation(req) && pathExpectation(req) && bodyExpectation(req))
+          .thenRespond(Response(DiffieHellmanServer.create(createClientPublicKey)._1).toJson.prettyPrint)
       }
 
       lazy val registerProduct: Endpoint[Response] = super.registerProduct
 
-      lazy val organisation = Organisation("org-id", "org-code", "org@gmail.com")
-      lazy val encryptedProductToken = Encrypted(organisation)
+      val token = Token("licenceId", "productCode", "productEmail")
+      val product = Product(token.code, token.email, Encrypted(token))
 
-      lazy val productRegister = ProductRegister(organisation, encryptedProductToken)
-
-      implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
-        .whenRequestMatches(req => hostExpectation(req) && pathExpectation(req) && bodyExpectation(req))
-        .thenRespond(Response(DiffieHellmanServer.create(clientPublicKey)._1).toJson.prettyPrint)
-
-      val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](productRegister)).awaitValueUnsafe()
+      val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
       response.status mustEqual Status.Ok
 

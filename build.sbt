@@ -126,7 +126,7 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
       monocleCore,
       monocleMacro,
       commonsLang
-    ),
+    ) ++ circe,
     libraryDependencies ++= Seq(
       sotApiCommon,
       sotCommonSecure,

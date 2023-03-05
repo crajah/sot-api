@@ -54,6 +54,12 @@ object Dependencies {
   val sprayJsonShapeless = "com.github.fommil" %% "spray-json-shapeless" % "1.3.0"
   val jsonLenses = "net.virtual-void" %%  "json-lenses" % "0.6.2"
 
+  val circe: Seq[ModuleID] = Seq(
+    "io.circe" %% "circe-core",
+    "io.circe" %% "circe-generic",
+    "io.circe" %% "circe-parser"
+  ).map(_ % "0.9.1")
+
   val betterFiles = "com.github.pathikrit" %% "better-files" % "3.4.0"
 
   val sttp = "com.softwaremill.sttp" %% "core" % sttpVersion

@@ -15,7 +15,7 @@ import parallelai.common.secure.CryptoMechanic
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
-import parallelai.sot.api.model.ProductRegister
+import parallelai.sot.api.model.Product
 
 trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
@@ -27,7 +27,7 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJ
   protected def registerProduct(implicit sb: SttpBackend[Future, Nothing]): Endpoint[Response] = {
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
-    post(productPath :: "register" :: jsonBody[ProductRegister]) { pr: ProductRegister =>
+    post(productPath :: "register" :: jsonBody[Product]) { pr: Product =>
       val productRegister = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
       val request: Request[String, Nothing] =
