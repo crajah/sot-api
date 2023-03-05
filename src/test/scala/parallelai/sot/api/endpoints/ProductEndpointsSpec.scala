@@ -13,7 +13,7 @@ import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanCli
 import parallelai.common.secure.{CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.json.JsonLens._
-import parallelai.sot.api.model.{Product, Token}
+import parallelai.sot.api.model.{Product, ProductToken}
 
 class ProductEndpointsSpec extends WordSpec with MustMatchers {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(secret = secret.getBytes)
@@ -41,8 +41,8 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers {
 
       lazy val registerProduct: Endpoint[Response] = super.registerProduct
 
-      val token = Token("licenceId", "productCode", "productEmail")
-      val product = Product(token.code, token.email, Encrypted(token))
+      val productToken = ProductToken("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Encrypted(productToken))
 
       val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
