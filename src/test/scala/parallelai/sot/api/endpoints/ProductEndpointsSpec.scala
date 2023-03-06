@@ -78,7 +78,7 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with ResponseOps {
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespond(Response(DiffieHellmanServer.create(createClientPublicKey)._1)/*.toJson.prettyPrint*/)
+          .thenRespond(Response(DiffieHellmanServer.create(createClientPublicKey)._1))
       }
 
       lazy val registerProduct: Endpoint[Response] = super.registerProduct

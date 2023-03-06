@@ -26,10 +26,10 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with Response
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
     post(productPath :: "register" :: jsonBody[Product]) { pr: Product =>
-      val productRegister = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
+      val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
       val request: Request[Response, Nothing] =
-        sttp post licenceUri"/product/register" body productRegister response asJson[Response]
+        sttp post licenceUri"/product/register" body product response asJson[Response]
 
       request.send.map { response =>
         response.body match {
