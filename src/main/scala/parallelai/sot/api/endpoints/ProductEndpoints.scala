@@ -8,16 +8,14 @@ import io.finch.syntax._
 import monocle.macros.syntax.lens._
 import shapeless.HNil
 import spray.json._
-import spray.json.lenses.JsonLenses._
 import com.softwaremill.sttp._
-import com.softwaremill.sttp.circe._
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.common.secure.{AES, CryptoMechanic}
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.model.Product
 
-trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
+trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with ResponseOps with DefaultJsonProtocol with Logging {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
 
   val productPath: Endpoint[HNil] = api.path :: "product"
@@ -30,18 +28,14 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJ
     post(productPath :: "register" :: jsonBody[Product]) { pr: Product =>
       val productRegister = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
-      val request: Request[String, Nothing] =
-        sttp post licenceUri"/product/register" body productRegister
+      val request: Request[Response, Nothing] =
+        sttp post licenceUri"/product/register" body productRegister response asJson[Response]
 
       request.send.map { response =>
-        val rep = response.body
-        println(s"===> RRRRR $rep")
-
         response.body match {
           case Right(r) =>
-            println(s"===> THE r IS: $r")
-            val serverPublicKey = r.parseJson.extract[ServerPublicKey]("content")
-            val clientSharedSecret: ClientSharedSecret = DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+            val serverPublicKey = r.content.convertTo[ServerPublicKey]
+            val clientSharedSecret: ClientSharedSecret = createClientSharedSecret(serverPublicKey)
             println(s"===> x = $clientSharedSecret")
 
             Response(serverPublicKey)
@@ -53,5 +47,9 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJ
     }
   }
 
-  protected def createClientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
+  protected def createClientPublicKey: ClientPublicKey =
+    DiffieHellmanClient.createClientPublicKey
+
+  private def createClientSharedSecret(serverPublicKey: ServerPublicKey) =
+    DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
 }
