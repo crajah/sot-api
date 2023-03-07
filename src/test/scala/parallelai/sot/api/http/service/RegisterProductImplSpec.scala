@@ -20,7 +20,7 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers {
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => true)
-          .thenRespond(Result(ProductRegistered(DiffieHellmanServer.create(DiffieHellmanClient.createClientPublicKey)._1), Status.Ok))
+          .thenRespond(Result(RegisteredProduct(DiffieHellmanServer.create(DiffieHellmanClient.createClientPublicKey)._1), Status.Ok))
       }
 
       val registerProduct = new RegisterProductImpl
@@ -43,7 +43,7 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers {
 }
 
 class RegisterProductImpl2 extends RegisterProduct[Id] {
-  def apply(product: Product): Id[Result[ProductRegistered]] = {
+  def apply(product: Product): Id[Result[RegisteredProduct]] = {
     println("Nice - got errors")
     Result(Left(Errors("blah")), Status.BadRequest)
   }

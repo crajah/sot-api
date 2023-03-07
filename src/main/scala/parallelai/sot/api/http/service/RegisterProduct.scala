@@ -17,24 +17,24 @@ import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContex
 import cats.implicits._
 
 abstract class RegisterProduct[F[_]: Monad] {
-  def apply(product: Product): F[Result[ProductRegistered]]
+  def apply(product: Product): F[Result[RegisteredProduct]]
 }
 
-case class ProductRegistered(serverPublicKey: ServerPublicKey)
+case class RegisteredProduct(serverPublicKey: ServerPublicKey)
 
-object ProductRegistered {
-  implicit val statusEncoder: Encoder[ProductRegistered] = deriveEncoder
-  implicit val statusDecoder: Decoder[ProductRegistered] = deriveDecoder
+object RegisteredProduct {
+  implicit val encoder: Encoder[RegisteredProduct] = deriveEncoder
+  implicit val decoder: Decoder[RegisteredProduct] = deriveDecoder
 }
 
 class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
   //implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
-  def apply(pr: Product): Future[Result[ProductRegistered]] = {
+  def apply(pr: Product): Future[Result[RegisteredProduct]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
-    val request: Request[Result[ProductRegistered], Nothing] =
-      sttp post licenceUri"/product/register" body product response asJson[Result[ProductRegistered]]
+    val request: Request[Result[RegisteredProduct], Nothing] =
+      sttp post licenceUri"/product/register" body product response asJson[Result[RegisteredProduct]]
 
     request.send.map { response =>
       response.body match {
