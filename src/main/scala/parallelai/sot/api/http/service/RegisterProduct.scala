@@ -1,4 +1,4 @@
-package parallelai.sot.api.service
+package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
@@ -9,13 +9,14 @@ import monocle.macros.syntax.lens._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder, Json}
+import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 
 trait RegisterProduct {
-  def apply(product: Product)(implicit sb: SttpBackend[Future, Nothing]): Future[ServerPublicKey]
+  def apply(product: Product)(implicit sb: SttpBackend[Future, Nothing] = null): Future[Result[ProductRegistered]]
 }
 
-case class ProductRegistered(x: String)
+case class ProductRegistered(serverPublicKey: ServerPublicKey)
 
 object ProductRegistered {
   implicit val statusEncoder: Encoder[ProductRegistered] = deriveEncoder
@@ -25,7 +26,7 @@ object ProductRegistered {
 class RegisterProductImpl extends RegisterProduct with LicenceEndpointOps with ResultOps {
   implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
-  def apply(pr: Product)(implicit sb: SttpBackend[Future, Nothing]): Future[ServerPublicKey] = {
+  def apply(pr: Product)(implicit sb: SttpBackend[Future, Nothing]): Future[Result[ProductRegistered]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
     val request: Request[Result[ProductRegistered], Nothing] =
@@ -33,8 +34,16 @@ class RegisterProductImpl extends RegisterProduct with LicenceEndpointOps with R
 
     request.send.map { response =>
       response.body match {
-        case Right(result) => null //result
-        case Left(error) => null
+        case Right(result @ Result(Right(productRegistered), status)) =>
+          val clientSharedSecret: ClientSharedSecret = createClientSharedSecret(productRegistered.serverPublicKey)
+          println(s"===> x = $clientSharedSecret")
+          result
+
+        case Right(result @ Result(Left(errors), status)) =>
+          result
+
+        case Left(error) =>
+          Result(Left(Errors(error)), Status.UnprocessableEntity)
       }
     }
 

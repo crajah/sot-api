@@ -1,4 +1,4 @@
-package parallelai.sot.api.service
+package parallelai.sot.api.http.service
 
 import java.nio.charset.StandardCharsets
 import com.softwaremill.sttp.{BodySerializer, ResponseAs, StringBody, asString}

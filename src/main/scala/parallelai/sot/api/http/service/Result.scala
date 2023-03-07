@@ -1,4 +1,4 @@
-package parallelai.sot.api.service
+package parallelai.sot.api.http.service
 
 import io.circe._
 import com.twitter.finagle.http.Status

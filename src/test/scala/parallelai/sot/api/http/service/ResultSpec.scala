@@ -1,9 +1,10 @@
-package parallelai.sot.api.service
+package parallelai.sot.api.http.service
 
 import io.circe.Json
 import org.scalatest.{MustMatchers, WordSpec}
 import com.twitter.finagle.http.Status
 import io.circe.syntax._
+import parallelai.sot.api.http.service.{Errors, Result}
 
 class ResultSpec extends WordSpec with MustMatchers {
   "Result" should {
