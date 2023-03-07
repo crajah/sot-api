@@ -1,6 +1,7 @@
 package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
+import cats.implicits._
 import monocle.macros.syntax.lens._
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import com.twitter.finagle.http.Status
@@ -10,9 +11,7 @@ import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{Product, RegisteredProduct}
 
-class RegisterProduct(implicit sb: SttpBackend[Future, Nothing]) extends parallelai.sot.api.http.service.RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
-
-
+class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
   def apply(pr: Product): Future[Result[RegisteredProduct]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 

@@ -25,7 +25,7 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers {
           .thenRespond(Result(registeredProduct, Status.Ok))
       }
 
-      val registerProduct = new RegisterProduct
+      val registerProduct = new RegisterProductImpl
 
       val productToken = ProductToken("licenceId", "productCode", "productEmail")
       val product = Product(productToken.code, productToken.email, Encrypted(productToken))

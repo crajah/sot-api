@@ -17,7 +17,7 @@ import com.dimafeng.testcontainers.Container
 import com.google.cloud.storage.Bucket
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.endpoints.{Error, Response}
+import parallelai.sot.api.http.endpoints.{Error, Response}
 import parallelai.sot.api.model.{GitVersion, _}
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.mechanics._
