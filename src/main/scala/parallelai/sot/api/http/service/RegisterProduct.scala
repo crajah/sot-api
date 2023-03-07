@@ -13,7 +13,7 @@ import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 
 trait RegisterProduct {
-  def apply(product: Product)(implicit sb: SttpBackend[Future, Nothing] = null): Future[Result[ProductRegistered]]
+  def apply(product: Product): Future[Result[ProductRegistered]]
 }
 
 case class ProductRegistered(serverPublicKey: ServerPublicKey)
@@ -23,10 +23,10 @@ object ProductRegistered {
   implicit val statusDecoder: Decoder[ProductRegistered] = deriveDecoder
 }
 
-class RegisterProductImpl extends RegisterProduct with LicenceEndpointOps with ResultOps {
+class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct with LicenceEndpointOps with ResultOps {
   implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
-  def apply(pr: Product)(implicit sb: SttpBackend[Future, Nothing]): Future[Result[ProductRegistered]] = {
+  def apply(pr: Product): Future[Result[ProductRegistered]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
     val request: Request[Result[ProductRegistered], Nothing] =
