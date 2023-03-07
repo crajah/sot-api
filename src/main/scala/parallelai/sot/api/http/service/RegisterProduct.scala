@@ -1,6 +1,8 @@
 package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
+
+import cats.Monad
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.sot.api.endpoints.{LicenceEndpointOps, Response}
@@ -11,9 +13,11 @@ import io.circe.syntax._
 import io.circe.{Decoder, Encoder, Json}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
+import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
+import cats.implicits._
 
-trait RegisterProduct {
-  def apply(product: Product): Future[Result[ProductRegistered]]
+abstract class RegisterProduct[F[_]: Monad] {
+  def apply(product: Product): F[Result[ProductRegistered]]
 }
 
 case class ProductRegistered(serverPublicKey: ServerPublicKey)
@@ -23,8 +27,8 @@ object ProductRegistered {
   implicit val statusDecoder: Decoder[ProductRegistered] = deriveDecoder
 }
 
-class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct with LicenceEndpointOps with ResultOps {
-  implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
+class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
+  //implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
   def apply(pr: Product): Future[Result[ProductRegistered]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
@@ -46,20 +50,6 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
           Result(Left(Errors(error)), Status.UnprocessableEntity)
       }
     }
-
-    /*request.send.map { response =>
-      response.body match {
-        case Right(r) =>
-          val serverPublicKey = r.content.convertTo[ServerPublicKey]
-          val clientSharedSecret: ClientSharedSecret = createClientSharedSecret(serverPublicKey)
-          println(s"===> x = $clientSharedSecret")
-
-          Response(serverPublicKey)
-
-        case Left(e) =>
-          e.parseJson.convertTo[Response]
-      }
-    }*/
   }
 
   protected def createClientPublicKey: ClientPublicKey =

@@ -1,6 +1,7 @@
 package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
+import cats.Id
 import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.testing.SttpBackendStub
@@ -41,10 +42,10 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers {
   }
 }
 
-class RegisterProductImpl2 extends RegisterProduct {
-  def apply(product: Product): Future[Result[ProductRegistered]] =
-    Future successful {
-      println("Nice - got errors")
-      Result(Left(Errors("blah")), Status.BadRequest)
-    }
+class RegisterProductImpl2 extends RegisterProduct[Id] {
+  def apply(product: Product): Id[Result[ProductRegistered]] = {
+    println("Nice - got errors")
+    Result(Left(Errors("blah")), Status.BadRequest)
+  }
+
 }
