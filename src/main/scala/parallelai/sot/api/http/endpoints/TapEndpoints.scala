@@ -12,9 +12,9 @@ import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.DagActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.model.Id
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.model.{Id, _}
 import parallelai.sot.executor.model.SOTMacroConfig._
 
 trait TapEndpoints extends EndpointOps with DagActions with DatastoreMappableType with EntityFormats with Logging {

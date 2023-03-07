@@ -12,6 +12,7 @@ import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model.{Id, _}
 
 trait DagEndpoints extends EndpointOps with EntityFormats with DatastoreMappableType with RuleActions with DagActions {

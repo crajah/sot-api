@@ -9,9 +9,10 @@ import org.slf4j.event.Level._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.SbtExcecutionContext
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.endpoints.{Error, Response, ResponseException}
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.http.endpoints.{Response, ResponseException}
+import parallelai.sot.api.model._
 
 trait SbtMechanic extends StatusMechanic with Logging {
   this: GoogleStorageMechanic with GitMechanic with DatastoreConfig =>

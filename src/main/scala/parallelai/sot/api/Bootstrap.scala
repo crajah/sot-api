@@ -3,6 +3,7 @@ package parallelai.sot.api
 import scala.concurrent.Future
 import io.finch._
 import io.finch.sprayjson._
+import io.finch.circe._
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.filter.Cors

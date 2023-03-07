@@ -9,10 +9,11 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.storage.{Bucket, StorageOptions}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.model._
 import parallelai.sot.api.file.FileOps
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.endpoints.{Error, Response, ResponseException}
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.http.endpoints.{Response, ResponseException}
+import parallelai.sot.api.model._
 
 trait GoogleStorageMechanic extends StatusMechanic with FileOps {
   this: DatastoreConfig =>

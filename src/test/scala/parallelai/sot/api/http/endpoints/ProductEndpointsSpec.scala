@@ -4,18 +4,20 @@ import scala.concurrent.Future
 import io.finch.Input._
 import io.finch.sprayjson._
 import io.finch.{Application, Endpoint}
+import javax.crypto.SecretKey
 import spray.json._
 import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.softwaremill.sttp.{Request, StringBody}
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanServer, ServerPublicKey}
-import parallelai.common.secure.{AES, CryptoMechanic, Encrypted}
+import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient, DiffieHellmanServer}
+import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.{secret, _}
+import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.json.JsonLens._
-import parallelai.sot.api.model.{Product, ProductToken}
+import parallelai.sot.api.model.{ApiSharedSecret, IdGenerator99UniqueSuffix, Product, ProductToken, RegisteredProduct}
 
-class ProductEndpointsSpec extends WordSpec with MustMatchers with ResponseOps {
+class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99UniqueSuffix {
   val licenceErrorMessage = "Mocked Licence Error Message"
 
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
@@ -28,68 +30,77 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with ResponseOps {
 
   "Licence endpoints" should {
     "fail to register product when product token sanity check is invalid" in new ProductEndpoints {
-      override protected val createClientPublicKey: ClientPublicKey = ClientPublicKey("client-public-key".getBytes)
-
       val bodyExpectation: Request[_, _] => Boolean =
         _.body.asInstanceOf[StringBody].s.parseJson.containsFields("code", "email", "token")
 
-      implicit val backend: SttpBackendStub[Future, Nothing] = {
+      implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespondWithCode(Status.Unauthorized.code, Response(Error(licenceErrorMessage), Status.Unauthorized))
-      }
+          .thenRespond(Result(Errors(licenceErrorMessage), Status.Unauthorized))
 
-      lazy val registerProduct: Endpoint[Response] = super.registerProduct
+      lazy val registerProduct: Endpoint[Result[RegisteredProduct]] = super.registerProduct
 
       val productToken = ProductToken("licenceId", "productCode", "productEmail")
       val product = Product("wrongCode", "wrongEmail", Encrypted(productToken))
 
-      val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+      val Some(result) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
-      response.status mustEqual Status.Unauthorized
-      response.content.convertTo[Error].message mustEqual licenceErrorMessage
+      result.status mustEqual Status.Unauthorized
+      result.value mustBe Left(Errors(licenceErrorMessage))
     }
 
     "fail to register product when product token sanity check is invalid and no client public key was generated" in new ProductEndpoints {
       val bodyExpectation: Request[_, _] => Boolean =
         _.body.asInstanceOf[StringBody].s.parseJson.containsFields("code", "email", "token")
 
-      implicit val backend: SttpBackendStub[Future, Nothing] = {
+      implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespondWithCode(Status.Unauthorized.code, Response(Errors(licenceErrorMessage, licenceErrorMessage), Status.Unauthorized))
-      }
+          .thenRespond(Result(Errors(licenceErrorMessage, licenceErrorMessage), Status.Unauthorized))
 
-      lazy val registerProduct: Endpoint[Response] = super.registerProduct
+      lazy val registerProduct: Endpoint[Result[RegisteredProduct]] = super.registerProduct
 
       val productToken = ProductToken("licenceId", "productCode", "productEmail")
       val product = Product("wrongCode", "wrongEmail", Encrypted(productToken))
 
-      val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+      val Some(result) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
-      response.status mustEqual Status.Unauthorized
-      response.content.convertTo[Errors].messages mustEqual Seq(licenceErrorMessage, licenceErrorMessage)
+      result.status mustEqual Status.Unauthorized
+      result.value mustBe Left(Errors(licenceErrorMessage, licenceErrorMessage))
     }
 
     "register product" in new ProductEndpoints {
+      val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
+
+      val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer.create(clientPublicKey)
+
+      val aesSecretKey: SecretKey = Crypto.aesSecretKey
+
       val bodyExpectation: Request[_, _] => Boolean =
         _.body.asInstanceOf[StringBody].s.parseJson.containsFields("code", "email", "token")
 
-      implicit val backend: SttpBackendStub[Future, Nothing] = {
+      implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespond(Response(DiffieHellmanServer.create(createClientPublicKey)._1))
-      }
+          .thenRespond(Result(RegisteredProduct(serverPublicKey, Encrypted(ApiSharedSecret(uniqueId(), aesSecretKey))), Status.Ok))
 
-      lazy val registerProduct: Endpoint[Response] = super.registerProduct
+      lazy val registerProduct: Endpoint[Result[RegisteredProduct]] = super.registerProduct
 
       val productToken = ProductToken("licenceId", "productCode", "productEmail")
       val product = Product(productToken.code, productToken.email, Encrypted(productToken))
 
-      val Some(response) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+      val Some(result) = registerProduct(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
-      response.status mustEqual Status.Ok
-      println(response.content.convertTo[ServerPublicKey]) // TODO Actual assertion
+      result.status mustEqual Status.Ok
+
+      val Right(registeredProduct) = result.value
+
+      registeredProduct.serverPublicKey mustEqual serverPublicKey
+
+      registeredProduct.licenceIdAndApiServerSecret.decryptT[ApiSharedSecret] must have (
+        'licenceId (uniqueId()),
+        'apiServerSecret (aesSecretKey)
+      )
     }
   }
 }

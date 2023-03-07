@@ -8,9 +8,9 @@ import cats.implicits._
 import shapeless.datatype.datastore._
 import org.slf4j.event.Level.INFO
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.endpoints.Error
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.model._
 
 trait LaunchMechanic extends StatusMechanic with DatastoreMappableType {
   this: DatastoreConfig =>

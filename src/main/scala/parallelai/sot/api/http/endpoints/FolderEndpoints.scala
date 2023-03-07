@@ -13,6 +13,7 @@ import org.joda.time.Instant.now
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model.{Folder, Id}
 
 trait FolderEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMappableType {

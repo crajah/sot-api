@@ -14,9 +14,9 @@ import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.DagActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.model.{Id, IdGenerator}
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.model.{Id, IdGenerator, _}
 import parallelai.sot.api.time.Time
 import parallelai.sot.executor.model.SOTMacroConfig._
 
