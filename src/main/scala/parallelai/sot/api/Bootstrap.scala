@@ -7,14 +7,14 @@ import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.filter.Cors
 import com.twitter.finagle.http.service.HttpResponseClassifier
-import com.twitter.finagle.http.{ Request, Response }
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.param.Label
 import com.twitter.finagle.stats.StatsReceiver
-import com.twitter.finagle.{ Http, Service }
+import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
-import parallelai.sot.api.endpoints._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints._
 
 object Bootstrap extends TwitterServer with DatastoreConfig
   with HealthEndpoints with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints

@@ -11,7 +11,7 @@ import org.slf4j.event.Level
 import org.slf4j.event.Level._
 import parallelai.sot.api.concurrent.GitExcecutionContext
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.entities.{ GitVersion, _ }
+import parallelai.sot.api.model.{ GitVersion, _ }
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 
 trait GitMechanic extends StatusMechanic with DatastoreMappableType {

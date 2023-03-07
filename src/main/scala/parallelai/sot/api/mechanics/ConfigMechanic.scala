@@ -6,7 +6,7 @@ import better.files._
 import grizzled.slf4j.Logging
 import spray.json._
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.entities.Files.{ ApplicationConfigFile, RuleFile }
+import parallelai.sot.api.model.Files.{ ApplicationConfigFile, RuleFile }
 import parallelai.sot.api.file
 
 trait ConfigMechanic extends file.FileOps with Logging {

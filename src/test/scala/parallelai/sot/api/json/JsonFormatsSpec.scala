@@ -3,7 +3,7 @@ package parallelai.sot.api.json
 import scala.collection.immutable.ListMap
 import spray.json.{JsArray, JsObject, JsString}
 import org.scalatest.{MustMatchers, WordSpec}
-import parallelai.sot.api.entities.JsonFormats
+import parallelai.sot.api.model.JsonFormats
 import parallelai.sot.api.model.IdGenerator99UniqueSuffix
 import parallelai.sot.executor.model.SOTMacroConfig._
 

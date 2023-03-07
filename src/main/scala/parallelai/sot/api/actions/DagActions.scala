@@ -9,9 +9,9 @@ import shapeless.LabelledGeneric.Aux
 import shapeless._
 import shapeless.datatype.datastore._
 import parallelai.common.persist.Identity
-import parallelai.sot.api.endpoints.Error
-import parallelai.sot.api.entities.{TapWrapper, _}
+import parallelai.sot.api.model.{TapWrapper, _}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.Error
 import parallelai.sot.executor.model.SOTMacroConfig._
 
 trait DagActions extends EntityFormats with DatastoreMappableType {

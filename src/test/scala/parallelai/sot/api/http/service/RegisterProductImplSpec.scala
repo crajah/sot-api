@@ -3,27 +3,29 @@ package parallelai.sot.api.http.service
 import scala.concurrent.Future
 import cats.Id
 import org.scalatest.{MustMatchers, WordSpec}
-import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.diffiehellman.{DiffieHellmanClient, DiffieHellmanServer}
-import parallelai.common.secure.{AES, CryptoMechanic, Encrypted}
+import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.secret
-import parallelai.sot.api.endpoints.{Error, Response}
-import parallelai.sot.api.model.{Product, ProductToken}
+import parallelai.sot.api.http.{Errors, Result}
+import parallelai.sot.api.model._
 
 class RegisterProductImplSpec extends WordSpec with MustMatchers {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
 
   "Registration of a product" should {
     "" in {
+      val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer.create(DiffieHellmanClient.createClientPublicKey)
+      val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(ApiSharedSecret(IdGenerator.uniqueId(), Crypto.aesSecretKey)))
+
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => true)
-          .thenRespond(Result(RegisteredProduct(DiffieHellmanServer.create(DiffieHellmanClient.createClientPublicKey)._1), Status.Ok))
+          .thenRespond(Result(registeredProduct, Status.Ok))
       }
 
-      val registerProduct = new RegisterProductImpl
+      val registerProduct = new RegisterProduct
 
       val productToken = ProductToken("licenceId", "productCode", "productEmail")
       val product = Product(productToken.code, productToken.email, Encrypted(productToken))

@@ -8,10 +8,10 @@ import spray.json._
 import com.google.api.services.dataflow.model
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.endpoints.{Error, Response}
-import parallelai.sot.api.entities.Job._
-import parallelai.sot.api.entities._
+import parallelai.sot.api.model.Job._
+import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.{Error, Response}
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics._
 import parallelai.sot.api.model.IdGenerator

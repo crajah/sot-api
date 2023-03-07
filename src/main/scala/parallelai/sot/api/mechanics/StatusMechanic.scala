@@ -16,9 +16,9 @@ import org.slf4j.event.Level
 import org.slf4j.event.Level._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.disjunction.EitherOps
-import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
-import parallelai.sot.api.entities._
+import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.{Error, Response, ResponseException}
 
 // TODO ???
 trait Enum[A] {

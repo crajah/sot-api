@@ -6,9 +6,9 @@ import spray.json._
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.concurrent.FileExcecutionContext
 import parallelai.sot.api.config.executor
-import parallelai.sot.api.endpoints.{Error, Response, ResponseException}
-import parallelai.sot.api.entities.{GitVersion, Version, VersionActive, Versions}
+import parallelai.sot.api.model.{GitVersion, Version, VersionActive, Versions}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.{Error, Response, ResponseException}
 import parallelai.sot.api.mechanics.GitMechanic
 
 trait VersionActions extends GitMechanic with DefaultJsonProtocol {
