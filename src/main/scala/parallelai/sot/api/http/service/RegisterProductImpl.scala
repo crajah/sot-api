@@ -5,13 +5,17 @@ import cats.implicits._
 import monocle.macros.syntax.lens._
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import com.twitter.finagle.http.Status
+import parallelai.common.secure.{AES, CryptoMechanic}
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
+import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{Product, RegisteredProduct}
 
 class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
+  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
+
   def apply(pr: Product): Future[Result[RegisteredProduct]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
 
@@ -23,6 +27,9 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
         case Right(result @ Result(Right(registeredProduct), status)) =>
           val clientSharedSecret: ClientSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
           println(s"===> x = $clientSharedSecret")
+
+          val apiSharedSecret = registeredProduct.apiSharedSecret.decrypt
+
           result
 
         case Right(result @ Result(Left(errors), status)) =>

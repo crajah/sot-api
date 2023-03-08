@@ -2,10 +2,10 @@ package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.Future
 import io.finch.Input._
-import io.finch.sprayjson._
+import io.finch.circe._
 import io.finch.{Application, Endpoint}
 import javax.crypto.SecretKey
-import spray.json._
+import spray.json._ // TODO - Should this be here?
 import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.softwaremill.sttp.{Request, StringBody}
@@ -72,7 +72,7 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
     "register product" in new ProductEndpoints {
       val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
 
-      val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer.create(clientPublicKey)
+      val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer create clientPublicKey
 
       val aesSecretKey: SecretKey = Crypto.aesSecretKey
 
@@ -97,7 +97,7 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
 
       registeredProduct.serverPublicKey mustEqual serverPublicKey
 
-      registeredProduct.licenceIdAndApiServerSecret.decryptT[ApiSharedSecret] must have (
+      registeredProduct.apiSharedSecret.decrypt must have (
         'licenceId (uniqueId()),
         'apiServerSecret (aesSecretKey)
       )

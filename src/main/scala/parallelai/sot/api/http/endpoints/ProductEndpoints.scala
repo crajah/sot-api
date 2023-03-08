@@ -3,7 +3,7 @@ package parallelai.sot.api.http.endpoints
 import scala.concurrent.Future
 import grizzled.slf4j.Logging
 import io.finch._
-import io.finch.sprayjson._
+import io.finch.circe._
 import io.finch.syntax._
 import shapeless.HNil
 import com.softwaremill.sttp._
@@ -21,8 +21,6 @@ trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with Logging 
     val registerProduct = new RegisterProductImpl
 
     post(productPath :: "register" :: jsonBody[Product]) { product: Product =>
-      //val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)
-
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 
       result.toTFuture
