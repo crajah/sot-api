@@ -25,3 +25,8 @@ class ProductEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
     }
   }
 }
+
+object ProductEndpoints {
+  def apply()(implicit sb: SttpBackend[Future, Nothing]): Endpoint[Result[RegisteredProduct]] =
+    (new ProductEndpoints).productEndpoints
+}

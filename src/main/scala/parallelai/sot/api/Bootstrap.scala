@@ -26,8 +26,8 @@ object Bootstrap extends TwitterServer with DatastoreConfig
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   val service: Service[Request, Response] = (
-    (new HealthEndpoints).healthEndpoints :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
-    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: (new ProductEndpoints).productEndpoints).toServiceAs[Application.Json]
+    HealthEndpoints() :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
+    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: ProductEndpoints()).toServiceAs[Application.Json]
 
   implicit class CorsService(service: Service[Request, Response]) {
     def withCORSSupport: Service[Request, Response] = {

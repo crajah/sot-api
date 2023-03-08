@@ -29,3 +29,8 @@ class HealthEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoin
       Response(s"Successfully pinged service ${api.name}").toTFuture
     }
 }
+
+object HealthEndpoints {
+  def apply()(implicit sb: SttpBackend[Future, Nothing]) =
+    (new HealthEndpoints).healthEndpoints
+}
