@@ -48,7 +48,7 @@ object Dependencies {
   val finchCore = "com.github.finagle" %% "finch-core" % finchVersion
   val finchGeneric = "com.github.finagle" %% "finch-generic" % finchVersion
   val finchSprayJson = "com.github.finagle" %% "finch-sprayjson" % finchVersion
-  val finchOAuth2 = "com.github.finagle" %% "finch-oauth2" % "0.16.1"
+  val finchCirce = "com.github.finagle" %% "finch-circe" % finchVersion
 
   val sprayJson = "io.spray" %%  "spray-json" % "1.3.4"
   val sprayJsonShapeless = "com.github.fommil" %% "spray-json-shapeless" % "1.3.0"

@@ -1,32 +1,48 @@
 package parallelai.sot.api
 
 import scala.concurrent.Future
+import grizzled.slf4j.Logging
 import io.finch._
+import io.finch.circe._
 import io.finch.sprayjson._
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.filter.Cors
 import com.twitter.finagle.http.service.HttpResponseClassifier
-import com.twitter.finagle.http.{ Request, Response }
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.param.Label
 import com.twitter.finagle.stats.StatsReceiver
-import com.twitter.finagle.{ Http, Service }
+import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
-import parallelai.sot.api.endpoints._
-import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.{ProductEndpoints, _}
 
-object Bootstrap extends TwitterServer with DatastoreConfig
-  with HealthEndpoints with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints
-  with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints with ProductEndpoints {
-
+object Bootstrap extends TwitterServer with Logging {
   // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
 
-  implicit val backend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+  implicit val stats: StatsReceiver = statsReceiver
+
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   val service: Service[Request, Response] = (
-    healthEndpoints :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
-    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: productEndpoints).toServiceAs[Application.Json]
+    HealthEndpoints() :+: RuleEndpoints() :+: VersionEndpoints() :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
+    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: ProductEndpoints()
+  ).toServiceAs[Application.Json]
+
+  def main(): Unit = {
+    val server = Http.server
+      .configured(Label(s"https/${api.name}"))
+      .withStatsReceiver(statsReceiver)
+      .withResponseClassifier(HttpResponseClassifier.ServerErrorsAsFailures)
+      .withHttpStats
+      .serve(s"${api.uri.getHost}:${api.uri.getPort}", service.withCORSSupport)
+
+    info(s"HTTP server started on: ${server.boundAddress}")
+
+    closeOnExit(server)
+
+    Await.all(server, adminHttpServer)
+  }
 
   implicit class CorsService(service: Service[Request, Response]) {
     def withCORSSupport: Service[Request, Response] = {
@@ -37,23 +53,6 @@ object Bootstrap extends TwitterServer with DatastoreConfig
 
       new Cors.HttpFilter(policy) andThen service
     }
-  }
-
-  implicit val stats: StatsReceiver = statsReceiver
-
-  def main(): Unit = {
-    val server = Http.server
-      .configured(Label(s"https/${api.name}"))
-      .withStatsReceiver(statsReceiver)
-      .withResponseClassifier(HttpResponseClassifier.ServerErrorsAsFailures)
-      .withHttpStats
-      .serve(s"${api.uri.getHost}:${api.uri.getPort}", service.withCORSSupport)
-
-    logger.info(s"HTTP server started on: ${server.boundAddress}")
-
-    closeOnExit(server)
-
-    Await.all(server, adminHttpServer)
   }
 }
 
