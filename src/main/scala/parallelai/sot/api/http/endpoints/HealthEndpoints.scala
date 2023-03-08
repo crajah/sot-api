@@ -10,12 +10,12 @@ import com.softwaremill.sttp._
 import parallelai.sot.api.concurrent.WebServiceExecutionContext
 import parallelai.sot.api.config._
 
-trait HealthEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
+class HealthEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with LicenceEndpointOps with DefaultJsonProtocol with Logging {
   val healthPath: Endpoint[HNil] = api.path :: "health"
 
-  def healthEndpoints(implicit sb: SttpBackend[Future, Nothing]) = licenceHealth :+: health
+  lazy val healthEndpoints = licenceHealth :+: health
 
-  protected def licenceHealth(implicit sb: SttpBackend[Future, Nothing]): Endpoint[Response] = {
+  protected lazy val licenceHealth: Endpoint[Response] = {
     implicit val ec: WebServiceExecutionContext = WebServiceExecutionContext()
 
     get(healthPath :: licence.context) {
@@ -24,7 +24,7 @@ trait HealthEndpoints extends EndpointOps with LicenceEndpointOps with DefaultJs
     }
   }
 
-  protected def health: Endpoint[Response] =
+  protected lazy val health: Endpoint[Response] =
     get(healthPath) {
       Response(s"Successfully pinged service ${api.name}").toTFuture
     }

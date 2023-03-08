@@ -12,14 +12,12 @@ import parallelai.sot.api.http.Result
 import parallelai.sot.api.http.service.RegisterProductImpl
 import parallelai.sot.api.model.{Product, RegisteredProduct}
 
-trait ProductEndpoints extends EndpointOps with LicenceEndpointOps with Logging {
+class ProductEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with Logging {
+  lazy val registerProduct = new RegisterProductImpl
+
   val productPath: Endpoint[HNil] = api.path :: "product"
 
-  def productEndpoints(implicit sb: SttpBackend[Future, Nothing]) = registerProduct
-
-  protected def registerProduct(implicit sb: SttpBackend[Future, Nothing]): Endpoint[Result[RegisteredProduct]] = {
-    val registerProduct = new RegisterProductImpl
-
+  lazy val productEndpoints: Endpoint[Result[RegisteredProduct]] = {
     post(productPath :: "register" :: jsonBody[Product]) { product: Product =>
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 

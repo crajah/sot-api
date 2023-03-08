@@ -15,19 +15,19 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.endpoints._
+import parallelai.sot.api.http.endpoints.{ProductEndpoints, _}
 
 object Bootstrap extends TwitterServer with DatastoreConfig
-  with HealthEndpoints with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints
-  with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints with ProductEndpoints {
+  with RuleEndpoints with VersionEndpoints with EnvEndpoints with StepEndpoints with TapEndpoints
+  with DagEndpoints with SourceEndpoints with SchemaEndpoints with LookupEndpoints with FolderEndpoints with LcmEndpoints {
 
   // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
 
-  implicit val backend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   val service: Service[Request, Response] = (
-    healthEndpoints :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
-    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: productEndpoints).toServiceAs[Application.Json]
+    (new HealthEndpoints).healthEndpoints :+: ruleEndpoints :+: versionEndpoints :+: envEndpoints :+: stepEndpoints :+: lookupEndpoints :+: tapEndpoints :+:
+    dagEndpoints :+: sourceEndpoints :+: schemaEndpoints :+: folderEndpoints :+: lcmEndpoints :+: (new ProductEndpoints).productEndpoints).toServiceAs[Application.Json]
 
   implicit class CorsService(service: Service[Request, Response]) {
     def withCORSSupport: Service[Request, Response] = {
