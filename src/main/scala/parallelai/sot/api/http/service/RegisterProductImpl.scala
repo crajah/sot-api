@@ -18,7 +18,7 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
 
   // TODO - Remove this (mutable) map and use some persistence mechanism
-  protected val licences: mutable.Map[String, ClientSharedSecret] = mutable.Map[String, ClientSharedSecret]() // TODO - Instead of String, should have LicenceId
+  val licences: mutable.Map[String, ClientSharedSecret] = mutable.Map[String, ClientSharedSecret]() // TODO - Instead of String, should have LicenceId
 
   def apply(pr: Product): Future[Result[RegisteredProduct]] = {
     val product = pr.lens(_.clientPublicKey) set Option(createClientPublicKey)

@@ -48,3 +48,7 @@ trait StepEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreM
       stepDAO.deleteById(id.value).map(_ => Response(JsObject())).toTFuture
     }
 }
+
+object StepEndpoints {
+  def apply() = (new StepEndpoints with DatastoreConfig).stepEndpoints
+}

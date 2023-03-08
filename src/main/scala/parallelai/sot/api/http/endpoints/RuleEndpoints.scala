@@ -12,9 +12,9 @@ import spray.json.{JsValue, _}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.model._
 
 trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
@@ -68,4 +68,8 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
   lazy val allRule: Endpoint[Response] = get(rulePath :: paramOption("all") :: paramOption("latest")) { (all: Option[String], latest: Option[String]) =>
     jobs(all, latest).toTFuture
   }
+}
+
+object RuleEndpoints {
+  def apply() = (new RuleEndpoints with DatastoreConfig).ruleEndpoints
 }

@@ -43,3 +43,7 @@ trait SourceEndpoints extends EndpointOps with DefaultJsonProtocol with Datastor
       sourceSinkDAO.deleteById(id.value).map(_ => Response(JsObject())).toTFuture
     }
 }
+
+object SourceEndpoints {
+  def apply() = (new SourceEndpoints with DatastoreConfig).sourceEndpoints
+}

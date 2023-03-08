@@ -47,3 +47,7 @@ trait TapEndpoints extends EndpointOps with DagActions with DatastoreMappableTyp
       tapDAO.deleteById(id.value).map(_ => Response(JsObject())).toTFuture
     }
 }
+
+object TapEndpoints {
+  def apply() = (new TapEndpoints with DatastoreConfig).tapEndpoints
+}

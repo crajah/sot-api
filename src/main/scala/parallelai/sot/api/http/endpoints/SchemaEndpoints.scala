@@ -51,3 +51,7 @@ trait SchemaEndpoints extends EndpointOps with DagActions with IdGenerator with 
     schemaT.fold(Response(Error(s"Non existing schema: $id - Cannot proceed."), Status.NotFound))(wrapper => Response(wrapper.schema))
   }
 }
+
+object SchemaEndpoints {
+  def apply() = (new SchemaEndpoints with DatastoreConfig).schemaEndpoints
+}

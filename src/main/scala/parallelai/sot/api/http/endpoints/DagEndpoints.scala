@@ -41,3 +41,7 @@ trait DagEndpoints extends EndpointOps with EntityFormats with DatastoreMappable
       dagDAO.deleteById(id.value).map(u => Response(u)).toTFuture
     }
 }
+
+object DagEndpoints {
+  def apply() = (new DagEndpoints with DatastoreConfig).dagEndpoints
+}

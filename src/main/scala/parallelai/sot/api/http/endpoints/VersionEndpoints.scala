@@ -43,3 +43,7 @@ trait VersionEndpoints extends EndpointOps with VersionActions with DefaultJsonP
   lazy val allActiveVersions: Endpoint[Response] =
     get(versionPath :: "active") { getActiveVersions.toTFuture }
 }
+
+object VersionEndpoints {
+  def apply() = (new VersionEndpoints with DatastoreConfig).versionEndpoints
+}

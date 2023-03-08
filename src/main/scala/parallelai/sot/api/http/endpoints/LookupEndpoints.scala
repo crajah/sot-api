@@ -34,3 +34,7 @@ trait LookupEndpoints extends EndpointOps with DefaultJsonProtocol with Datastor
       lookupDAO.insert(lookup).map(Response(_)).toTFuture
     }
 }
+
+object LookupEndpoints {
+  def apply() = (new LookupEndpoints with DatastoreConfig).lookupEndpoints
+}

@@ -36,3 +36,7 @@ trait LcmEndpoints extends DataflowMechanic with EndpointOps with DefaultJsonPro
     job <- updateStateIfRunning(env.projectId, ruleLcm.id, cancel.fold(JOB_STATE_DRAINED)(_ => JOB_STATE_CANCELLED))
   } yield Response(job.toSotJob, Status.Accepted)
 }
+
+object LcmEndpoints {
+  def apply() = (new LcmEndpoints with DatastoreConfig).lcmEndpoints
+}

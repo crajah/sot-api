@@ -40,3 +40,7 @@ trait EnvEndpoints extends EndpointOps with DefaultJsonProtocol with DatastoreMa
       environmentDAO.deleteById(id.value).map(u => Response(u)).toTFuture
     }
 }
+
+object EnvEndpoints {
+  def apply() = (new EnvEndpoints with DatastoreConfig).envEndpoints
+}

@@ -47,3 +47,7 @@ trait FolderEndpoints extends EndpointOps with DefaultJsonProtocol with Datastor
       folderDAO.deleteById(id.value).map(_ => Response(JsObject())).toTFuture
     }
 }
+
+object FolderEndpoints {
+  def apply() = (new FolderEndpoints with DatastoreConfig).folderEndpoints
+}

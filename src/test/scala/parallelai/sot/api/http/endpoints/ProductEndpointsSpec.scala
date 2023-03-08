@@ -10,7 +10,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.softwaremill.sttp.{Request, StringBody}
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient, DiffieHellmanServer}
+import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, DiffieHellmanServer}
 import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.http.{Errors, Result}
@@ -94,6 +94,8 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
           'licenceId (uniqueId()),
           'apiServerSecret (aesSecretKey)
         )
+
+        registerProduct.licences(uniqueId()) mustBe a [ClientSharedSecret]
       }
     }
   }
