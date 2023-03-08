@@ -16,11 +16,11 @@ import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.baseDirectory
-import parallelai.sot.api.model.Files._
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
+import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.mechanics._
-import parallelai.sot.api.model.IdGenerator99UniqueSuffix
+import parallelai.sot.api.model.Files._
+import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, _}
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 

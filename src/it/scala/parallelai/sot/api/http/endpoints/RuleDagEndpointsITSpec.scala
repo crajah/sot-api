@@ -12,8 +12,9 @@ import org.scalatest.time._
 import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
+import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.model._
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 import parallelai.sot.executor.model.SOTMacroConfig._
