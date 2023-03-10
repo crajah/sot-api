@@ -19,7 +19,7 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
 
   val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer.create(clientPublicKey)
 
-  val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(ApiSharedSecret(uniqueId(), Crypto.aesSecretKey)))
+  val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(uniqueId(), Crypto.aesSecretKey)))
 
   class RegisterProductSimpleImpl extends RegisterProduct[Id] {
     def apply(product: Product): Id[Result[RegisteredProduct]] =
@@ -41,8 +41,8 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
 
       val registerProduct = new RegisterProductImpl
 
-      val productToken = ProductToken("licenceId", "productCode", "productEmail")
-      val product = Product(productToken.code, productToken.email, Encrypted(productToken))
+      val productToken = Token("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
 
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 
@@ -57,8 +57,8 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
     "be successful" in {
       val registerProduct = new RegisterProductSimpleImpl
 
-      val productToken = ProductToken("licenceId", "productCode", "productEmail")
-      val product = Product(productToken.code, productToken.email, Encrypted(productToken))
+      val productToken = Token("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
 
       val result: Id[Result[RegisteredProduct]] = registerProduct(product)
 
@@ -69,8 +69,8 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
     "fail" in {
       val registerProduct = new RegisterProductSimpleErrorImpl
 
-      val productToken = ProductToken("licenceId", "productCode", "productEmail")
-      val product = Product(productToken.code, productToken.email, Encrypted(productToken))
+      val productToken = Token("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
 
       val result: Id[Result[RegisteredProduct]] = registerProduct(product)
 

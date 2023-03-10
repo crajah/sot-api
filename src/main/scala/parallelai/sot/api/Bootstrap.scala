@@ -15,7 +15,7 @@ import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
-import parallelai.sot.api.http.endpoints.{ProductEndpoints, _}
+import parallelai.sot.api.http.endpoints._
 
 object Bootstrap extends TwitterServer with Logging {
   // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
@@ -26,7 +26,7 @@ object Bootstrap extends TwitterServer with Logging {
 
   val service: Service[Request, Response] = (
     HealthEndpoints() :+: RuleEndpoints() :+: VersionEndpoints() :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
-    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: ProductEndpoints()
+    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints()
   ).toServiceAs[Application.Json]
 
   def main(): Unit = {

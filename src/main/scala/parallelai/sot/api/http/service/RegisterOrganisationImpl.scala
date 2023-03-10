@@ -2,33 +2,34 @@ package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
 import cats.implicits._
+import javax.crypto.SecretKey
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.{AES, CryptoMechanic}
-import parallelai.common.secure.diffiehellman.{ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
+import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
-import parallelai.sot.api.model.{Product, RegisteredProduct, SharedSecret}
+import parallelai.sot.api.model.{Organisation, RegisteredOrganisation}
 
-class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
+class RegisterOrganisationImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterOrganisation[Future] with LicenceEndpointOps with ResultOps {
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
 
   // TODO - Remove this mutable nonsense and use some persistence mechanism
-  var licenceId: String = _
-  var clientSharedSecret: ClientSharedSecret = _
+  var orgCode: String = _
+  var orgSharedSecret: SecretKey = _
 
-  def apply(product: Product): Future[Result[RegisteredProduct]] = {
-    val request: Request[Result[RegisteredProduct], Nothing] =
-      sttp post licenceUri"/product/register" body product response asJson[Result[RegisteredProduct]]
+  def apply(organisation: Organisation): Future[Result[RegisteredOrganisation]] = {
+    val request: Request[Result[RegisteredOrganisation], Nothing] =
+      sttp post licenceUri"/org/register" body organisation response asJson[Result[RegisteredOrganisation]]
 
     request.send.map { response =>
       response.body match {
-        case Right(result @ Result(Right(registeredProduct), status)) =>
-          clientSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
-          val apiSharedSecret: SharedSecret = registeredProduct.apiSharedSecret.decrypt
-          licenceId = apiSharedSecret.id
+        case Right(result @ Result(Right(registeredOrganisation), status)) =>
+          val sharedSecret = registeredOrganisation.orgSharedSecret.decrypt
+          orgCode = sharedSecret.id
+          orgSharedSecret = sharedSecret.secret
 
           result
 
@@ -40,6 +41,9 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
       }
     }
   }
+
+  protected def createClientPublicKey: ClientPublicKey =
+    DiffieHellmanClient.createClientPublicKey
 
   protected def createClientSharedSecret(serverPublicKey: ServerPublicKey): ClientSharedSecret =
     DiffieHellmanClient.createClientSharedSecret(serverPublicKey)

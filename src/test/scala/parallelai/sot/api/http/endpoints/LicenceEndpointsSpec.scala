@@ -15,9 +15,9 @@ import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.json.JsonLens._
-import parallelai.sot.api.model.{ApiSharedSecret, IdGenerator99UniqueSuffix, Product, ProductToken, RegisteredProduct}
+import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, Product, RegisteredProduct, SharedSecret, Token}
 
-class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99UniqueSuffix {
+class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99UniqueSuffix {
   val licenceErrorMessage = "Mocked Licence Error Message"
 
   implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
@@ -31,18 +31,18 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
   val bodyExpectation: Request[_, _] => Boolean =
     _.body.asInstanceOf[StringBody].s.parseJson.containsFields("code", "email", "token")
 
-  "Licence endpoints" should {
+  "Product licence endpoints" should {
     "fail to register product when product token sanity check is invalid" in {
       implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
           .thenRespond(Result(Errors(licenceErrorMessage), Status.Unauthorized))
 
-      new ProductEndpoints {
-        val productToken = ProductToken("licenceId", "productCode", "productEmail")
-        val product = Product("wrongCode", "wrongEmail", Encrypted(productToken))
+      new LicenceEndpoints {
+        val productToken = Token("licenceId", "productCode", "productEmail")
+        val product = Product("wrongCode", "wrongEmail", Option(Encrypted(productToken)))
 
-        val Some(result) = productEndpoints(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+        val Some(result) = productRegistation(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
         result.status mustEqual Status.Unauthorized
         result.value mustBe Left(Errors(licenceErrorMessage))
@@ -55,11 +55,11 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
           .thenRespond(Result(Errors(licenceErrorMessage, licenceErrorMessage), Status.Unauthorized))
 
-      new ProductEndpoints {
-        val productToken = ProductToken("licenceId", "productCode", "productEmail")
-        val product = Product("wrongCode", "wrongEmail", Encrypted(productToken))
+      new LicenceEndpoints {
+        val productToken = Token("licenceId", "productCode", "productEmail")
+        val product = Product("wrongCode", "wrongEmail", Option(Encrypted(productToken)))
 
-        val Some(result) = productEndpoints(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+        val Some(result) = productRegistation(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
         result.status mustEqual Status.Unauthorized
         result.value mustBe Left(Errors(licenceErrorMessage, licenceErrorMessage))
@@ -76,13 +76,13 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
       implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespond(Result(RegisteredProduct(serverPublicKey, Encrypted(ApiSharedSecret(uniqueId(), aesSecretKey))), Status.Ok))
+          .thenRespond(Result(RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(uniqueId(), aesSecretKey))), Status.Ok))
 
-      new ProductEndpoints {
-        val productToken = ProductToken("licenceId", "productCode", "productEmail")
-        val product = Product(productToken.code, productToken.email, Encrypted(productToken))
+      new LicenceEndpoints {
+        val productToken = Token("licenceId", "productCode", "productEmail")
+        val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
 
-        val Some(result) = productEndpoints(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
+        val Some(result) = productRegistation(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
         result.status mustEqual Status.Ok
 
@@ -91,11 +91,12 @@ class ProductEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
         registeredProduct.serverPublicKey mustEqual serverPublicKey
 
         registeredProduct.apiSharedSecret.decrypt must have(
-          'licenceId (uniqueId()),
-          'apiServerSecret (aesSecretKey)
+          'id (uniqueId()),
+          'secret (aesSecretKey)
         )
 
-        registerProduct.licences(uniqueId()) mustBe a [ClientSharedSecret]
+        registerProduct.licenceId mustEqual uniqueId()
+        registerProduct.clientSharedSecret mustBe a [ClientSharedSecret]
       }
     }
   }

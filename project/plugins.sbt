@@ -26,3 +26,7 @@ addSbtPlugin("io.gatling" % "gatling-sbt" % "2.2.2")
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.6")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.7")
+
+addSbtPlugin("com.scalapenos" % "sbt-prompt" % "1.0.2")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.9.3")

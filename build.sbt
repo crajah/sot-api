@@ -2,6 +2,7 @@ import scala.language.postfixOps
 import sbt.Resolver
 import sbt.Keys.{libraryDependencies, publishTo}
 import com.amazonaws.regions.{Region, Regions}
+import com.scalapenos.sbt.prompt.SbtPrompt.autoImport._
 import Dependencies._
 import SotDependencies._
 
@@ -26,7 +27,7 @@ lazy val assemblySettings = assemblyMergeStrategy in assembly := {
 
 lazy val IT = config("it") extend Test
 
-lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin, DockerComposePlugin)
+lazy val `sot-api` = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin, DockerComposePlugin)
   .configs(IT, IntegrationTest, GatlingIt)
   .settings(Defaults.itSettings: _*)
   .settings(inConfig(IT)(Defaults.testSettings): _*)
@@ -40,6 +41,7 @@ lazy val root = (project in file(".")).enablePlugins(GatlingPlugin, DockerPlugin
         scalaVersion := scala_2_12
       )
     ),
+    promptTheme := com.scalapenos.sbt.prompt.PromptThemes.ScalapenosTheme,
     scalacOptions ++= Seq(
       "–explaintypes",
       "–optimise",
