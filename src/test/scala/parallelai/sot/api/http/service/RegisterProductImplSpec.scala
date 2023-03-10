@@ -33,6 +33,11 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
 
   "Registration of a product" should {
     "be successful" in {
+      val productToken = Token("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
+
+      val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(productToken.id, Crypto.aesSecretKey)))
+
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(_ => true)
@@ -41,14 +46,13 @@ class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutur
 
       val registerProduct = new RegisterProductImpl
 
-      val productToken = Token("licenceId", "productCode", "productEmail")
-      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
-
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 
       whenReady(result) { r =>
         r.status mustEqual Status.Ok
         r.value.right.get mustEqual registeredProduct
+
+        registerProduct.licenceId mustEqual "licenceId"
       }
     }
   }

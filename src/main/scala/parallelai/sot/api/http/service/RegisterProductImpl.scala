@@ -17,7 +17,7 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
 
   // TODO - Remove this mutable nonsense and use some persistence mechanism
   var licenceId: String = _
-  var clientSharedSecret: ClientSharedSecret = _
+  var apiSharedSecret: ClientSharedSecret = _
 
   def apply(product: Product): Future[Result[RegisteredProduct]] = {
     val request: Request[Result[RegisteredProduct], Nothing] =
@@ -26,9 +26,8 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
     request.send.map { response =>
       response.body match {
         case Right(result @ Result(Right(registeredProduct), status)) =>
-          clientSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
-          val apiSharedSecret: SharedSecret = registeredProduct.apiSharedSecret.decrypt
-          licenceId = apiSharedSecret.id
+          apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
+          licenceId = registeredProduct.apiSharedSecret.decrypt.id
 
           result
 

@@ -96,7 +96,7 @@ class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
         )
 
         registerProduct.licenceId mustEqual uniqueId()
-        registerProduct.clientSharedSecret mustBe a [ClientSharedSecret]
+        registerProduct.apiSharedSecret mustBe a [ClientSharedSecret]
       }
     }
   }
