@@ -7,13 +7,13 @@ import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient, DiffieHellmanServer}
-import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
+import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model._
 
 class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutures with IdGenerator99UniqueSuffix {
-  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
 

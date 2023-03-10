@@ -5,7 +5,7 @@ import cats.implicits._
 import javax.crypto.SecretKey
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.{AES, CryptoMechanic}
+import parallelai.common.secure.{AES, Crypto}
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config.secret
@@ -14,7 +14,7 @@ import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{Organisation, RegisteredOrganisation}
 
 class RegisterOrganisationImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterOrganisation[Future] with LicenceEndpointOps with ResultOps {
-  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   // TODO - Remove this mutable nonsense and use some persistence mechanism
   var orgCode: String = _

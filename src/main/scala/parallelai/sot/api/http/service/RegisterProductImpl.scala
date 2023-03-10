@@ -4,16 +4,16 @@ import scala.concurrent.Future
 import cats.implicits._
 import com.softwaremill.sttp.{Request, SttpBackend, sttp}
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.{AES, CryptoMechanic}
 import parallelai.common.secure.diffiehellman.{ClientSharedSecret, DiffieHellmanClient, ServerPublicKey}
+import parallelai.common.secure.{AES, Crypto}
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
-import parallelai.sot.api.model.{Product, RegisteredProduct, SharedSecret}
+import parallelai.sot.api.model.{Product, RegisteredProduct}
 
 class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
-  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   // TODO - Remove this mutable nonsense and use some persistence mechanism
   var licenceId: String = _
@@ -25,9 +25,9 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
 
     request.send.map { response =>
       response.body match {
-        case Right(result @ Result(Right(registeredProduct), status)) =>
-          apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
+        case Right(result @ Result(Right(registeredProduct), _)) =>
           licenceId = registeredProduct.apiSharedSecret.decrypt.id
+          apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
 
           result
 
@@ -41,5 +41,5 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
   }
 
   protected def createClientSharedSecret(serverPublicKey: ServerPublicKey): ClientSharedSecret =
-    DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+    DiffieHellmanClient createClientSharedSecret serverPublicKey
 }

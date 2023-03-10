@@ -3,10 +3,9 @@ package parallelai.sot.api.model
 import shapeless.datatype.datastore.DatastoreType._
 import shapeless.datatype.datastore._
 import spray.json._
-import parallelai.common.secure.{ AES, CryptoMechanic, CryptoResult }
+import parallelai.common.secure.{ AES, Crypto, CryptoResult }
 import parallelai.sot.api.config.secret
 
-// TODO - To use
 case class EncryptedString(value: String)
 
 object EncryptedString {
@@ -23,7 +22,7 @@ object EncryptedString {
 
   private val datastoreType = DatastoreType[CryptoResult[Array[Byte]]]
 
-  private val crypto = new CryptoMechanic(AES, secret.getBytes())
+  private val crypto = Crypto(AES, secret.getBytes())
 
   private def fromEntity(v: com.google.datastore.v1.Value): EncryptedString = {
     val dsEntity = v.getEntityValue // get the DataStore Entity object

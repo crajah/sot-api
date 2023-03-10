@@ -11,7 +11,7 @@ import com.softwaremill.sttp.testing.SttpBackendStub
 import com.softwaremill.sttp.{Request, StringBody}
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecret, DiffieHellmanClient, DiffieHellmanServer}
-import parallelai.common.secure.{AES, Crypto, CryptoMechanic, Encrypted}
+import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.json.JsonLens._
@@ -20,7 +20,7 @@ import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, Product, RegisteredP
 class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99UniqueSuffix {
   val licenceErrorMessage = "Mocked Licence Error Message"
 
-  implicit val crypto: CryptoMechanic = new CryptoMechanic(AES, secret = secret.getBytes)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   val licenceHostExpectation: Request[_, _] => Boolean =
     _.uri.host.contains(licence.name)
