@@ -3,6 +3,7 @@ package parallelai.sot.api.http.service
 import scala.concurrent.Future
 import cats.Id
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
@@ -13,6 +14,8 @@ import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model._
 
 class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutures with IdGenerator99UniqueSuffix {
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
+
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
