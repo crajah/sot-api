@@ -3,7 +3,6 @@ package parallelai.sot.api.http.endpoints
 import scala.concurrent.Future
 import cats.Monad
 import io.finch._
-import io.finch.circe._
 import io.finch.sprayjson._
 import io.finch.syntax._
 import shapeless.HNil
@@ -13,7 +12,7 @@ import com.twitter.finagle.http.Status
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.actions.VersionActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.model.{Version, VersionActive, VersionToken}
+import parallelai.sot.api.model.V
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.{Result, ResultOps}
 import cats.implicits._
@@ -33,8 +32,10 @@ class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
   lazy val versionEndpoints = register :+: postVersion :+: versions :+: refreshVersion :+: deleteVersion :+: activeVersion :+: allActiveVersions
 
   lazy val register: Endpoint[Result[RegisteredVersion]] = {
-    post(versionPath :: "register" :: jsonBody[Encrypted[VersionToken]]) { versionToken: Encrypted[VersionToken] =>
-      registerVersion(versionToken).toTFuture
+    import io.finch.circe._
+
+    post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
+      registerVersion(version).toTFuture
 
       /*val versionToken = versionTokenEncrypted.decrypt
       println(versionToken)
