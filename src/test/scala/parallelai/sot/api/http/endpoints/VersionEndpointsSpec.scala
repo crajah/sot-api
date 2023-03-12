@@ -12,9 +12,10 @@ import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.gcp.datastore.{DatastoreConfig, DatastoreConfigMock}
-import parallelai.sot.api.model.{Version, VersionToken}
+import parallelai.sot.api.model.{Token, Version}
 import parallelai.sot.api.config.{licence, secret}
 import parallelai.sot.api.http.{Errors, Result}
+import com.github.nscala_time.time.Imports._
 
 class VersionEndpointsSpec extends WordSpec with MustMatchers {
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
@@ -33,10 +34,12 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
           .thenRespond(Result(Errors(""), Status.Unauthorized))
 
       new VersionEndpoints with DatastoreConfigMock {
-        val versionToken = VersionToken("licenceId", "organisationCode", Version("1.1.4"))
-        val Some(Result(Right(versionTokenEncrypted), Status.Ok)) = register(post(p"/$versionPath/register").withBody(Encrypted(versionToken))).awaitValueUnsafe()
+        val expiry = DateTime.nextDay
+        val token = Token("licenceId", "organisationCode", "me@gmail.com")
+        val version = Version("1.1.4", Option(token), Option(expiry))
+        val Some(Result(Right(registeredVersion), Status.Ok)) = register(post(p"/$versionPath/register").withBody(Encrypted(version))).awaitValueUnsafe()
 
-        println("RESULT: " + versionTokenEncrypted)
+        println("RESULT: " + registeredVersion.decrypt)
       }
     }
   }

@@ -9,16 +9,17 @@ import shapeless.HNil
 import spray.json._
 import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.{AES, Crypto, Encrypted}
+import parallelai.common.secure._
 import parallelai.sot.api.actions.VersionActions
 import parallelai.sot.api.config._
-import parallelai.sot.api.model.V
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.{Result, ResultOps}
 import cats.implicits._
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
+import parallelai.sot.api.model.{Version, VersionActive}
 
 class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
@@ -31,7 +32,7 @@ class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
 
   lazy val versionEndpoints = register :+: postVersion :+: versions :+: refreshVersion :+: deleteVersion :+: activeVersion :+: allActiveVersions
 
-  lazy val register: Endpoint[Result[RegisteredVersion]] = {
+  lazy val register: Endpoint[Result[Encrypted[RegisteredVersion]]] = {
     import io.finch.circe._
 
     post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
@@ -77,18 +78,26 @@ object VersionEndpoints {
 }
 
 abstract class RegisterVersion[F[_]: Monad] {
-  def apply(versionToken: Encrypted[VersionToken]): F[Result[RegisteredVersion]]
+  def apply(versionToken: Encrypted[Version]): F[Result[Encrypted[RegisteredVersion]]]
 }
 
 case class RegisteredVersion()
 
 object RegisteredVersion {
+  implicit val toBytes: ToBytes[RegisteredVersion] =
+    (registeredVersion: RegisteredVersion) => serialize(registeredVersion)
+
+  implicit val fromBytes: FromBytes[RegisteredVersion] =
+    (a: Array[Byte]) => deserialize[RegisteredVersion](a)
+
   implicit val encoder: Encoder[RegisteredVersion] = deriveEncoder[RegisteredVersion]
 
   implicit val decoder: Decoder[RegisteredVersion] = deriveDecoder[RegisteredVersion]
 }
 
 class RegisterVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterVersion[Future] with LicenceEndpointOps with ResultOps {
-  def apply(versionToken: Encrypted[VersionToken]): Future[Result[RegisteredVersion]] =
-    Future successful Result(RegisteredVersion(), Status.Ok)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
+
+  def apply(versionToken: Encrypted[Version]): Future[Result[Encrypted[RegisteredVersion]]] =
+    Future successful Result(Encrypted(RegisteredVersion()), Status.Ok)
 }
