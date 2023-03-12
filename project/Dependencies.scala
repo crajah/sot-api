@@ -6,7 +6,7 @@ object Dependencies {
   val shapelessDataTypeDataVersion = "0.1.7"
   val twitterBijectionVersion = "0.9.6"
   val twitterVersion = "18.3.0"
-  val finchVersion = "0.17.0"
+  val finchVersion = "0.18.0"
   val sttpVersion = "1.1.9"
   val gatlingVersion = "2.2.5"
   val monocleVersion = "1.5.0"
@@ -74,4 +74,6 @@ object Dependencies {
   val monocleMacro = "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion
 
   val commonsLang = "org.apache.commons" % "commons-lang3" % "3.7"
+
+  val scalaDateTime = "com.github.nscala-time" %% "nscala-time" % "2.18.0"
 }
