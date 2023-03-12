@@ -127,7 +127,8 @@ lazy val `sot-api` = (project in file(".")).enablePlugins(GatlingPlugin, DockerP
       sttpCirce,
       monocleCore,
       monocleMacro,
-      commonsLang
+      commonsLang,
+      scalaDateTime
     ) ++ circe,
     libraryDependencies ++= Seq(
       sotApiCommon,
