@@ -10,7 +10,7 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.http.endpoints.{Response, ResponseException}
 import parallelai.sot.api.mechanics.GitMechanic
-import parallelai.sot.api.model.{GitVersion, Version, VersionActive, Versions}
+import parallelai.sot.api.model.{GitVersion, VersionActive, Version, Versions}
 
 trait VersionActions extends GitMechanic with DefaultJsonProtocol {
   this: DatastoreConfig =>

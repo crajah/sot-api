@@ -1,5 +1,6 @@
 package parallelai.sot.api.http.endpoints
 
+import java.net.URI
 import scala.concurrent.Future
 import cats.Monad
 import io.finch._
@@ -86,5 +87,5 @@ class RegisterVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   def apply(versionToken: Encrypted[Version]): Future[Result[Encrypted[RegisteredVersion]]] =
-    Future successful Result(Encrypted(RegisteredVersion("", Token("", "", ""), new DateTime())), Status.Ok)
+    Future successful Result(Encrypted(RegisteredVersion(new URI(""), Token("", "", ""), new DateTime())), Status.Ok)
 }
