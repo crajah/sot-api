@@ -20,13 +20,15 @@ import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
 import org.joda.time.DateTime
+import parallelai.sot.api.http.Errors
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version, VersionActive}
+import parallelai.sot.api.services.VersionService
 
-class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
+class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
 
-  //implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
+  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   lazy val registerVersion = new RegisterVersionImpl
 
@@ -37,13 +39,17 @@ class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
   lazy val register: Endpoint[Result[Encrypted[RegisteredVersion]]] = {
     import io.finch.circe._
 
+    implicit val toBytes: ToBytes[RegisteredVersion] =
+      (version: RegisteredVersion) => serialize(version)
+
+    implicit val fromBytes: FromBytes[RegisteredVersion] =
+      (a: Array[Byte]) => deserialize[RegisteredVersion](a)
+
     post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
+      val decrypted: Version = Encrypted.decrypt(version)
+      versionService.versions += ((decrypted.token.get.code, decrypted.value) -> decrypted)
+
       registerVersion(version).toTFuture
-
-      /*val versionToken = versionTokenEncrypted.decrypt
-      println(versionToken)
-
-      Result(versionTokenEncrypted, Status.Ok).toTFuture*/
     }
   }
 
@@ -75,8 +81,8 @@ class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
 }
 
 object VersionEndpoints {
-  def apply()(implicit sb: SttpBackend[Future, Nothing]) =
-    (new VersionEndpoints with DatastoreConfig).versionEndpoints
+  def apply(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) =
+    (new VersionEndpoints(versionService) with DatastoreConfig).versionEndpoints
 }
 
 abstract class RegisterVersion[F[_]: Monad] {
