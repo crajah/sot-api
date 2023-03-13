@@ -15,11 +15,12 @@ import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.{Result, ResultOps}
 import cats.implicits._
-import io.circe.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
+import org.joda.time.DateTime
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
-import parallelai.sot.api.model.{Version, VersionActive}
+import parallelai.sot.api.model.{Token, Version, VersionActive}
 
 class VersionEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
@@ -81,7 +82,7 @@ abstract class RegisterVersion[F[_]: Monad] {
   def apply(versionToken: Encrypted[Version]): F[Result[Encrypted[RegisteredVersion]]]
 }
 
-case class RegisteredVersion()
+case class RegisteredVersion(uri: String, token: Token, expiry: DateTime)
 
 object RegisteredVersion {
   implicit val toBytes: ToBytes[RegisteredVersion] =
@@ -89,6 +90,12 @@ object RegisteredVersion {
 
   implicit val fromBytes: FromBytes[RegisteredVersion] =
     (a: Array[Byte]) => deserialize[RegisteredVersion](a)
+
+  implicit val dateTimeEncoder: Encoder[DateTime] =
+    (dateTime: DateTime) => Json.fromString(dateTime.toString)
+
+  implicit val dateTimeDecoder: Decoder[DateTime] =
+    (c: HCursor) => c.last.as[String].map(DateTime.parse)
 
   implicit val encoder: Encoder[RegisteredVersion] = deriveEncoder[RegisteredVersion]
 
@@ -99,5 +106,5 @@ class RegisterVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
   def apply(versionToken: Encrypted[Version]): Future[Result[Encrypted[RegisteredVersion]]] =
-    Future successful Result(Encrypted(RegisteredVersion()), Status.Ok)
+    Future successful Result(Encrypted(RegisteredVersion("", Token("", "", ""), new DateTime())), Status.Ok)
 }
