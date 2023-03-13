@@ -1,29 +1,28 @@
 package parallelai.sot.api.http.endpoints
 
 import java.net.URI
-import scala.concurrent.Future
+
 import cats.Monad
+import cats.implicits._
+import com.softwaremill.sttp.SttpBackend
+import com.twitter.finagle.http.Status
 import io.finch._
 import io.finch.sprayjson._
 import io.finch.syntax._
-import shapeless.HNil
-import spray.json._
-import com.softwaremill.sttp.SttpBackend
-import com.twitter.finagle.http.Status
+import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
+import org.joda.time.DateTime
 import parallelai.common.secure._
 import parallelai.sot.api.actions.VersionActions
+import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.{Result, ResultOps}
-import cats.implicits._
-import io.circe.{Decoder, Encoder, HCursor, Json}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
-import org.joda.time.DateTime
-import parallelai.sot.api.http.Errors
-import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version, VersionActive}
 import parallelai.sot.api.services.VersionService
+import shapeless.HNil
+import spray.json._
+
+import scala.concurrent.Future
 
 class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
@@ -38,12 +37,6 @@ class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[
 
   lazy val register: Endpoint[Result[Encrypted[RegisteredVersion]]] = {
     import io.finch.circe._
-
-    implicit val toBytes: ToBytes[RegisteredVersion] =
-      (version: RegisteredVersion) => serialize(version)
-
-    implicit val fromBytes: FromBytes[RegisteredVersion] =
-      (a: Array[Byte]) => deserialize[RegisteredVersion](a)
 
     post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
       val decrypted: Version = Encrypted.decrypt(version)
