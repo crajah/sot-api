@@ -12,11 +12,13 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
+import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model.{GitVersion, Version}
+import parallelai.sot.api.services.VersionService
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 
@@ -25,11 +27,13 @@ class VersionEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
                              with EndpointOps with DatastoreMappableType {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
+  implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
 
   val container: Container = datastoreContainer
+  val versionService = VersionService()
 
   "Version endpoints" should {
-    "have no available versions and so no links to other version APIs" in new VersionEndpoints with DatastoreITConfig {
+    "have no available versions and so no links to other version APIs" in new VersionEndpoints(versionService) with DatastoreITConfig {
       val Some(response) = versions(get(p"/$versionPath")).awaitValueUnsafe()
 
       // TODO
@@ -44,7 +48,7 @@ class VersionEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
       //response mustEqual Response(JsObject("error-message" -> JsString(s"""Invalid JSON, Object expected in field 'id', for provided rule: "$jsonString"""")), Status.BadRequest)
     }*/
 
-    "fail to refresh" in new VersionEndpoints with DatastoreITConfig {
+    "fail to refresh" in new VersionEndpoints(versionService) with DatastoreITConfig {
       val version = Version("v0.1.4")
       val Some(response) = refreshVersion(post(p"/$versionPath/refresh?wait=true").withBody[Application.Json](version)).awaitValueUnsafe()
 
@@ -52,7 +56,7 @@ class VersionEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
       response.content.convertTo[Error] mustEqual Error(s"No git repository to reload at ${executor.directory / "git" / version.value}")
     }
 
-    "refresh" in new VersionEndpoints with DatastoreITConfig {
+    "refresh" in new VersionEndpoints(versionService) with DatastoreITConfig {
       val version = Version("v0.1.4")
       val `v0.1.4 directory`: File = executor.directory / "git" / version.value
       val `v0.1.4 directory of executor`: File = `v0.1.4 directory` / "sot-executor"

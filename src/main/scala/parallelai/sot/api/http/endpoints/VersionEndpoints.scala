@@ -6,17 +6,16 @@ import cats.Monad
 import cats.implicits._
 import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
-import io.finch._
 import io.finch.sprayjson._
 import io.finch.syntax._
-import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
-import org.joda.time.DateTime
 import parallelai.common.secure._
 import parallelai.sot.api.actions.VersionActions
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.{Result, ResultOps}
+import parallelai.sot.api.http.{Result, ResultOps, Errors}
+import com.github.nscala_time.time.Imports._
+import io.finch.{Errors => _, _}
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version, VersionActive}
 import parallelai.sot.api.services.VersionService
 import shapeless.HNil
@@ -38,11 +37,16 @@ class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[
   lazy val register: Endpoint[Result[Encrypted[RegisteredVersion]]] = {
     import io.finch.circe._
 
+    //TODO this code is YUK!
     post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
       val decrypted: Version = Encrypted.decrypt(version)
-      versionService.versions += ((decrypted.token.get.code, decrypted.value) -> decrypted)
+      def isExpired(expiringDate: DateTime): Boolean = expiringDate.isBeforeNow
 
-      registerVersion(version).toTFuture
+      if (isExpired(decrypted.expiry.getOrElse(new DateTime().minusDays(1)))) Result[Encrypted[RegisteredVersion]](Left(Errors("Version expired!")), Status.UnprocessableEntity).toTFuture else {
+        versionService.versions += ((decrypted.token.get.code, decrypted.value) -> decrypted)
+
+        registerVersion(version).toTFuture
+      }
     }
   }
 

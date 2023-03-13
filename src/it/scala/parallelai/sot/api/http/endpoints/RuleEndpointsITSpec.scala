@@ -48,7 +48,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
     "fail to build a non-existing rule" in new RuleEndpoints with DatastoreITConfig {
       override protected def codeFromRepo: Future[File] = Future failed new Exception("Git unavailable")
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", "orgCode"))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val ruleId: String = response.content.convertTo[RuleStatus].id
@@ -62,7 +62,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
     "fail to build a rule when an error is encountered getting git code" in new RuleEndpoints with DatastoreITConfig {
       override protected def codeFromRepo: Future[File] = Future failed new Exception("Git unavailable")
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", "orgCode"))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val ruleId: String = response.content.convertTo[RuleStatus].id
@@ -84,7 +84,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       override def build(ruleId: String, version: String, path: File): Future[LogEntry] =
         mock[LogEntry].pure[Future]
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule(ruleId, version = "ps-to-bq-test_1513181186942"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule(ruleId, version = "ps-to-bq-test_1513181186942", "orgCode"))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val buildingRuleStatus: RuleStatus = response.content.convertTo[RuleStatus]

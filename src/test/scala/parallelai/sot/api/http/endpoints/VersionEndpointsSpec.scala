@@ -17,7 +17,9 @@ import parallelai.sot.api.services.VersionService
 import scala.concurrent.Future
 
 class VersionEndpointsSpec extends WordSpec with MustMatchers {
+
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
+  implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
 
   val licenceHostExpectation: Request[_, _] => Boolean =
     _.uri.host.contains(licence.name)
@@ -27,11 +29,6 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
 
   "Version endpoints" should {
     "register a version" in {
-      implicit val backend: SttpBackendStub[Future, Nothing] =
-        SttpBackendStub.asynchronousFuture
-          .whenRequestMatches(req => licenceHostExpectation(req) && registerVersionPathExpectation(req))
-          .thenRespond(Result(Errors(""), Status.Unauthorized))
-
       val versionService = VersionService()
 
       new VersionEndpoints(versionService) with DatastoreConfigMock {
@@ -45,6 +42,21 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
         }
 
         versionService.versions mustEqual Map(("organisationCode", "1.1.4") -> version)
+      }
+    }
+
+    "does not register a version if expired" in {
+      val versionService = VersionService()
+
+      new VersionEndpoints(versionService) with DatastoreConfigMock {
+        val expiry = DateTime.yesterday()
+        val token = Token("licenceId", "organisationCode", "me@gmail.com")
+        val version = Version("1.1.4", Option(token), Option(expiry))
+        val Some(response) = register(post(p"/$versionPath/register").withBody(Encrypted(version))).awaitValueUnsafe()
+
+        response must matchPattern {
+          case Result(Left(Errors("Version expired!")), Status(422)) =>
+        }
       }
     }
   }
