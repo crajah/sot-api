@@ -13,8 +13,9 @@ class BuildRuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFuture
   "Rule endpoints" should {
     "handle put request" in new RuleEndpoints with DatastoreConfig {
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("ruleId", version = "ps-to-bq-test_1513181186942"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("ruleId", version = "ps-to-bq-test_1513181186942", organization = "code"))).awaitValueUnsafe()
 
+      println(response.content)
       response.status mustEqual Status.Accepted
     }
   }

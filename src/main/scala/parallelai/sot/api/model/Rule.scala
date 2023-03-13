@@ -17,10 +17,10 @@ object Rule {
 }
 */
 
-case class Rule(id: String, version: String)
+case class Rule(id: String, version: String, organization: String)
 
 object Rule {
-  implicit val rootJsonFormat: RootJsonFormat[Rule] = jsonFormat2(Rule.apply)
+  implicit val rootJsonFormat: RootJsonFormat[Rule] = jsonFormat3(Rule.apply)
 }
 
 // TODO status: StatusType
