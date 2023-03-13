@@ -7,16 +7,18 @@ import org.scalatest.{MustMatchers, WordSpec}
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import io.finch.Input._
 import io.finch.sprayjson._
-import parallelai.sot.api.model.Rule
+import parallelai.sot.api.model.{Rule, RuleStatus}
 
 class BuildRuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
   "Rule endpoints" should {
-    "handle put request" in new RuleEndpoints with DatastoreConfig {
+    "handle put request with Rule" in new RuleEndpoints with DatastoreConfig {
+      val rule = Rule("ruleId", version = "ps-to-bq-test_1513181186942", organization = "code")
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("ruleId", version = "ps-to-bq-test_1513181186942", organization = "code"))).awaitValueUnsafe()
-
-      println(response.content)
       response.status mustEqual Status.Accepted
+      response.content.convertTo[RuleStatus] must matchPattern {
+        case RuleStatus(_, _, _, _) =>
+      }
     }
   }
 }
