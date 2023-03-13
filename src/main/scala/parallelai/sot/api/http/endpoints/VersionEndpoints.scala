@@ -1,27 +1,25 @@
 package parallelai.sot.api.http.endpoints
 
 import java.net.URI
-
+import scala.concurrent.Future
 import cats.Monad
 import cats.implicits._
-import com.softwaremill.sttp.SttpBackend
-import com.twitter.finagle.http.Status
 import io.finch.sprayjson._
 import io.finch.syntax._
+import io.finch.{Errors => _, _}
+import shapeless.HNil
+import spray.json._
+import com.github.nscala_time.time.Imports._
+import com.softwaremill.sttp.SttpBackend
+import com.twitter.finagle.http.Status
 import parallelai.common.secure._
 import parallelai.sot.api.actions.VersionActions
 import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.{Result, ResultOps, Errors}
-import com.github.nscala_time.time.Imports._
-import io.finch.{Errors => _, _}
+import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version, VersionActive}
 import parallelai.sot.api.services.VersionService
-import shapeless.HNil
-import spray.json._
-
-import scala.concurrent.Future
 
 class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>

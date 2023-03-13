@@ -1,12 +1,13 @@
 package parallelai.sot.api.http.endpoints
 
+import scala.concurrent.Future
+import io.finch.Input._
+import io.finch.circe._
+import org.scalatest.{MustMatchers, WordSpec}
 import com.github.nscala_time.time.Imports._
 import com.softwaremill.sttp.Request
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
-import io.finch.Input._
-import io.finch.circe._
-import org.scalatest.{MustMatchers, WordSpec}
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.{licence, secret}
 import parallelai.sot.api.gcp.datastore.DatastoreConfigMock
@@ -14,11 +15,9 @@ import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version}
 import parallelai.sot.api.services.VersionService
 
-import scala.concurrent.Future
-
 class VersionEndpointsSpec extends WordSpec with MustMatchers {
-
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
+
   implicit val backend: SttpBackendStub[Future, Nothing] = SttpBackendStub.asynchronousFuture
 
   val licenceHostExpectation: Request[_, _] => Boolean =
