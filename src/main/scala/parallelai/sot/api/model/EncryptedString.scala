@@ -3,7 +3,7 @@ package parallelai.sot.api.model
 import shapeless.datatype.datastore.DatastoreType._
 import shapeless.datatype.datastore._
 import spray.json._
-import parallelai.common.secure.{ AES, Crypto, CryptoResult }
+import parallelai.common.secure.{AES, Crypto, CryptoResult}
 import parallelai.sot.api.config.secret
 
 case class EncryptedString(value: String)

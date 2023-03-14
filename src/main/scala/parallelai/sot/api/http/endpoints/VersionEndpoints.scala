@@ -85,8 +85,6 @@ abstract class RegisterVersion[F[_]: Monad] {
 }
 
 class RegisterVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterVersion[Future] with LicenceEndpointOps with ResultOps {
-  implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
-
   def apply(versionToken: Encrypted[Version]): Future[Result[Encrypted[RegisteredVersion]]] =
-    Future successful Result(Encrypted(RegisteredVersion(new URI(""), Token("", "", ""), new DateTime())), Status.Ok)
+    Future successful Result(Encrypted(RegisteredVersion(new URI(""), Token("", "", ""), new DateTime()), Crypto(AES, secret.getBytes)), Status.Ok)
 }

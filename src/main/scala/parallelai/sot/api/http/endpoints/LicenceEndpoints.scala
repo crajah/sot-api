@@ -32,12 +32,10 @@ class LicenceEndpoints(implicit sb: SttpBackend[Future, Nothing]) extends Endpoi
 
   lazy val organisationRegistation: Endpoint[Result[RegisteredOrganisation]] =
     post(organisationPath :: "register" :: jsonBody[Organisation]) { organisation: Organisation =>
-      implicit val crypto: Crypto = Crypto(AES, registerProduct.apiSharedSecret.value)
-
       // TODO - License ID should not be encrypted
       val token = Token(registerProduct.licenceId, organisation.code, organisation.email)
 
-      registerOrganisation(organisation.lens(_.token) set Some(Encrypted(token))).toTFuture
+      registerOrganisation(organisation.lens(_.token) set Some(Encrypted(token, Crypto(AES, registerProduct.apiSharedSecret.value)))).toTFuture
     }
 
   protected def createClientPublicKey: ClientPublicKey =
