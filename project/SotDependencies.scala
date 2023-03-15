@@ -1,8 +1,8 @@
 import sbt._
 
 object SotDependencies {
-  val sotApiCommon = "parallelai" %% "sot-api-common" % "0.1.44"
-  val sotCommonSecure = "parallelai" %% "sot_common_secure" % "0.1.31"
+  val sotApiCommon = "parallelai" %% "sot-api-common" % "0.1.47"
+  val sotCommonSecure = "parallelai" %% "sot_common_secure" % "0.1.34"
   val sotExecutorModel = "parallelai" %% "sot_executor_model" % "0.1.54"
   val sotCommonPersist = "parallelai" %% "sot_common_persist" % "0.2.19"
   val sotGcp = "parallelai" %% "sot_gcp" % "0.1.3"
