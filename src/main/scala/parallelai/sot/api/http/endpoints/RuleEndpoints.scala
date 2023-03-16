@@ -2,6 +2,7 @@ package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import cats.data.EitherT
 import cats.implicits._
 import io.finch.sprayjson._
 import io.finch.syntax.{Mapper => _, _}
@@ -13,10 +14,12 @@ import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.json.JsonLens._
 import parallelai.sot.api.model._
+import parallelai.sot.api.services.VersionService
 
-trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
+class RuleEndpoints(versionService: VersionService) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
 
   val rulePath: Endpoint[HNil] = api.path :: "rule"
@@ -30,9 +33,14 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
     put(rulePath :: "build" :: jsonBody[JsValue]) { ruleJson: JsValue =>
       val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
       val version = ruleJson.extract[String]("version")
+      val organisation: Option[String] = ruleJson.asJsObject.fields.get("organisation").map(_.convertTo[String])
 
-      buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version).toTFuture
+      organisation.fold(buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version))(org =>
+        versionLookup(org, version).fold(Response(Error(s"Non existing version: ${org}"), Status.BadRequest).pure[Future])(rv => buildRule(rv))
+      ).toTFuture
     }
+
+  private def versionLookup(organisation: String, version: String) = versionService.versions.get(organisation -> version)
 
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/compose -H "Content-Type: application/json" -d '{ "id": "my-dag", "version": "2" }'
@@ -71,5 +79,5 @@ trait RuleEndpoints extends EndpointOps with RuleActions with DagActions {
 }
 
 object RuleEndpoints {
-  def apply() = (new RuleEndpoints with DatastoreConfig).ruleEndpoints
+  def apply(versionService: VersionService) = (new RuleEndpoints(versionService) with DatastoreConfig).ruleEndpoints
 }

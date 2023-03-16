@@ -17,7 +17,7 @@ object Rule {
 }
 */
 
-case class Rule(id: String, version: String, organization: String)
+case class Rule(id: String, version: String, organisation: Option[String])
 
 object Rule {
   implicit val rootJsonFormat: RootJsonFormat[Rule] = jsonFormat3(Rule.apply)

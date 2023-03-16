@@ -29,7 +29,7 @@ object Bootstrap extends TwitterServer with Logging {
   val licenceService = LicenceService()
 
   val service: Service[Request, Response] = (
-    HealthEndpoints() :+: RuleEndpoints() :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
+    HealthEndpoints() :+: RuleEndpoints(versionService) :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
     SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints(licenceService)
   ).toServiceAs[Application.Json]
 

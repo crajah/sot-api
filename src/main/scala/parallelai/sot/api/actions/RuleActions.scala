@@ -15,6 +15,7 @@ import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics._
 import parallelai.sot.api.model.Job._
 import parallelai.sot.api.model.{IdGenerator, _}
+import parallelai.sot.api.services.VersionService
 
 trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenerator
   with GitMechanic with SbtMechanic with ConfigMechanic with StatusMechanic with LaunchMechanic with GoogleStorageMechanic with DataflowMechanic {
@@ -40,6 +41,9 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
 
     Response(RuleStatus(ruleId, BUILD_START), Status.Accepted).pure[Future]
   }
+
+  def buildRule(registeredVersion: RegisteredVersion): Future[Response] =
+    Response(RuleStatus(registeredVersion.token.code, BUILD_START), Status.Accepted).pure[Future]
 
   def status(ruleId: String): Future[Response] =
     ruleStatusDAO findOneById ruleId map {
