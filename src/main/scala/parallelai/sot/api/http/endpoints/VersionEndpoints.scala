@@ -1,7 +1,6 @@
 package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.Future
-import cats.Monad
 import io.finch.sprayjson._
 import io.finch.syntax._
 import io.finch.{Errors => _, _}
@@ -15,14 +14,14 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.Result
 import parallelai.sot.api.http.service.RegisterVersionImpl
 import parallelai.sot.api.model.{RegisteredVersion, Version, VersionActive}
-import parallelai.sot.api.services.VersionService
+import parallelai.sot.api.services.{LicenceService, VersionService}
 
-class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
+class VersionEndpoints(versionService: VersionService, licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
 
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
-  lazy val registerVersion = new RegisterVersionImpl
+  lazy val registerVersion = new RegisterVersionImpl(versionService, licenceService)
 
   val versionPath: Endpoint[HNil] = api.path :: "version"
 
@@ -64,10 +63,6 @@ class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[
 }
 
 object VersionEndpoints {
-  def apply(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) =
-    (new VersionEndpoints(versionService) with DatastoreConfig).versionEndpoints
-}
-
-abstract class RegisterVersion[F[_]: Monad] {
-  def apply(versionToken: Encrypted[Version]): F[Result[Encrypted[RegisteredVersion]]]
+  def apply(versionService: VersionService, licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) =
+    (new VersionEndpoints(versionService, licenceService) with DatastoreConfig).versionEndpoints
 }

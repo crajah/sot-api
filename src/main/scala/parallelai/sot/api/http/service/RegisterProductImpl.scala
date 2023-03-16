@@ -11,13 +11,10 @@ import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{Product, RegisteredProduct}
+import parallelai.sot.api.services.LicenceService
 
-class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
+class RegisterProductImpl(licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) extends RegisterProduct[Future] with LicenceEndpointOps with ResultOps {
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
-
-  // TODO - Remove this mutable nonsense and use some persistence mechanism
-  var licenceId: String = _
-  var apiSharedSecret: ClientSharedSecret = _
 
   def apply(product: Product): Future[Result[RegisteredProduct]] = {
     val request: Request[Result[RegisteredProduct], Nothing] =
@@ -26,8 +23,8 @@ class RegisterProductImpl(implicit sb: SttpBackend[Future, Nothing]) extends Reg
     request.send.map { response =>
       response.body match {
         case Right(result @ Result(Right(registeredProduct), _)) =>
-          licenceId = registeredProduct.apiSharedSecret.decrypt.id
-          apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
+          licenceService.licenceId = registeredProduct.apiSharedSecret.decrypt.id
+          licenceService.apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
 
           result
 

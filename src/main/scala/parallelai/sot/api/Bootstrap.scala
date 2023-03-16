@@ -16,7 +16,7 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
 import parallelai.sot.api.http.endpoints._
-import parallelai.sot.api.services.VersionService
+import parallelai.sot.api.services.{LicenceService, VersionService}
 
 object Bootstrap extends TwitterServer with Logging {
   // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
@@ -26,10 +26,11 @@ object Bootstrap extends TwitterServer with Logging {
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   val versionService = VersionService()
+  val licenceService = LicenceService()
 
   val service: Service[Request, Response] = (
-    HealthEndpoints() :+: RuleEndpoints() :+: VersionEndpoints(versionService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
-    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints()
+    HealthEndpoints() :+: RuleEndpoints() :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
+    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints(licenceService)
   ).toServiceAs[Application.Json]
 
   def main(): Unit = {

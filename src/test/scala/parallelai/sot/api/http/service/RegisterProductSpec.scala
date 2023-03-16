@@ -12,6 +12,7 @@ import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model._
+import parallelai.sot.api.services.LicenceService
 
 class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures with IdGenerator99UniqueSuffix {
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
@@ -47,7 +48,8 @@ class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures w
           .thenRespond(Result(registeredProduct, Status.Ok))
       }
 
-      val registerProduct = new RegisterProductImpl
+      val licenceService = LicenceService()
+      val registerProduct = new RegisterProductImpl(licenceService)
 
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 
@@ -55,7 +57,7 @@ class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures w
         r.status mustEqual Status.Ok
         r.value.right.get mustEqual registeredProduct
 
-        registerProduct.licenceId mustEqual "licenceId"
+        licenceService.licenceId mustEqual "licenceId"
       }
     }
   }

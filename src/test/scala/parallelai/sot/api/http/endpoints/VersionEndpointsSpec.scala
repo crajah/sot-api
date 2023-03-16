@@ -13,7 +13,7 @@ import parallelai.sot.api.config.{licence, secret}
 import parallelai.sot.api.gcp.datastore.DatastoreConfigMock
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model.{RegisteredVersion, Token, Version}
-import parallelai.sot.api.services.VersionService
+import parallelai.sot.api.services.{LicenceService, VersionService}
 
 class VersionEndpointsSpec extends WordSpec with MustMatchers {
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
@@ -29,15 +29,16 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
   "Version endpoints" should {
     "register a version" in {
       val versionService = VersionService()
+      val licenceService = LicenceService()
 
-      new VersionEndpoints(versionService) with DatastoreConfigMock {
+      new VersionEndpoints(versionService, licenceService) with DatastoreConfigMock {
         val expiry = DateTime.nextDay
         val token = Token("licenceId", "organisationCode", "me@gmail.com")
         val version = Version("1.1.4", Option(token), Option(expiry))
         val Some(Result(Right(registeredVersion), Status.Ok)) = register(post(p"/$versionPath/register").withBody(Encrypted(version))).awaitValueUnsafe()
 
         registeredVersion.decrypt must matchPattern {
-          case RegisteredVersion(_, _, _) =>
+          case RegisteredVersion(_, _, _, _) =>
         }
 
         versionService.versions mustEqual Map(("organisationCode", "1.1.4") -> version)
@@ -46,8 +47,9 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
 
     "does not register a version if expired" in {
       val versionService = VersionService()
+      val licenceService = LicenceService()
 
-      new VersionEndpoints(versionService) with DatastoreConfigMock {
+      new VersionEndpoints(versionService, licenceService) with DatastoreConfigMock {
         val expiry = DateTime.yesterday()
         val token = Token("licenceId", "organisationCode", "me@gmail.com")
         val version = Version("1.1.4", Option(token), Option(expiry))
