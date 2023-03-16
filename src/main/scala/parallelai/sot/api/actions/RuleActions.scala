@@ -45,7 +45,6 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
   }
 
   def buildRule(registeredVersion: RegisteredVersion): Future[Response] = {
-    println(s"==================== >")
     findCryptFile(registeredVersion.uri)
     Response(RuleStatus(registeredVersion.token.code, BUILD_START), Status.Accepted).pure[Future]
   }
