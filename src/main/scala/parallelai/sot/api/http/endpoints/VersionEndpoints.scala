@@ -16,7 +16,7 @@ import parallelai.sot.api.http.service.RegisterVersionImpl
 import parallelai.sot.api.model.{RegisteredVersion, Version, VersionActive}
 import parallelai.sot.api.services.{LicenceService, VersionService}
 
-class VersionEndpoints(versionService: VersionService, licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
+class VersionEndpoints(licenceService: LicenceService, versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
   this: DatastoreConfig =>
 
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
@@ -64,5 +64,5 @@ class VersionEndpoints(versionService: VersionService, licenceService: LicenceSe
 
 object VersionEndpoints {
   def apply(versionService: VersionService, licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) =
-    (new VersionEndpoints(versionService, licenceService) with DatastoreConfig).versionEndpoints
+    (new VersionEndpoints(licenceService, versionService) with DatastoreConfig).versionEndpoints
 }

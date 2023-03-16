@@ -1,15 +1,19 @@
 package parallelai.sot.api.actions
 
 import java.net.URI
+import scala.concurrent.Future
 import better.files.File
 import org.scalatest.{MustMatchers, WordSpec}
 import com.github.nscala_time.time.Imports.DateTime
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.Errors
 import parallelai.sot.api.model.{RegisteredVersion, Token}
 
 class RuleActionsSpec extends WordSpec with MustMatchers {
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   "Invoke google cloud for crypt file on buildRule" in new RuleActions with DatastoreConfig {
     val tag = "v0.1.14"

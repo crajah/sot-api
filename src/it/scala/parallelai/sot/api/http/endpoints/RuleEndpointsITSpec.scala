@@ -14,6 +14,8 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time._
 import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.baseDirectory
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
@@ -21,6 +23,7 @@ import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.mechanics._
 import parallelai.sot.api.model.Files._
 import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, _}
+import parallelai.sot.api.services.VersionService
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 
@@ -30,13 +33,17 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+
   val container: Container = datastoreContainer
 
+  val versionService = VersionService()
+  
   val ruleId = "my-rule-id"
   val envId = "some-env-id"
 
   "Rule endpoints" should {
-    "fail to build a rule because of invalid JSON" in new RuleEndpoints with DatastoreITConfig {
+    "fail to build a rule because of invalid JSON" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val jsonString = "bad json"
 
       the [Exception] thrownBy {
@@ -45,10 +52,10 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
         """java.lang.RuntimeException: Not a json object: "bad json""""
     }
 
-    "fail to build a non-existing rule" in new RuleEndpoints with DatastoreITConfig {
+    "fail to build a non-existing rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       override protected def codeFromRepo: Future[File] = Future failed new Exception("Git unavailable")
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", "orgCode"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", Option("orgCode")))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val ruleId: String = response.content.convertTo[RuleStatus].id
@@ -59,10 +66,10 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       }
     }
 
-    "fail to build a rule when an error is encountered getting git code" in new RuleEndpoints with DatastoreITConfig {
+    "fail to build a rule when an error is encountered getting git code" in new RuleEndpoints(versionService) with DatastoreITConfig {
       override protected def codeFromRepo: Future[File] = Future failed new Exception("Git unavailable")
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", "orgCode"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule("rule-id", "version", Option("orgCode")))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val ruleId: String = response.content.convertTo[RuleStatus].id
@@ -73,7 +80,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       }
     }
 
-    "build a rule" in new RuleEndpoints with IdGenerator99UniqueSuffix with DatastoreITConfig {
+    "build a rule" in new RuleEndpoints(versionService) with IdGenerator99UniqueSuffix with DatastoreITConfig {
       override protected def codeFromRepo: Future[File] = baseDirectory.pure[Future]
 
       override protected def copyRepositoryCode(ruleId: String, version: String): Future[File] = baseDirectory.pure[Future]
@@ -84,7 +91,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       override def build(ruleId: String, version: String, path: File): Future[LogEntry] =
         mock[LogEntry].pure[Future]
 
-      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule(ruleId, version = "ps-to-bq-test_1513181186942", "orgCode"))).awaitValueUnsafe()
+      val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](Rule(ruleId, version = "ps-to-bq-test_1513181186942", Option("orgCode")))).awaitValueUnsafe()
       response.status mustEqual Status.Accepted
 
       val buildingRuleStatus: RuleStatus = response.content.convertTo[RuleStatus]
@@ -96,14 +103,14 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       response.content.convertTo[String] must fullyMatch regex raw"""$ruleId-\d+""".r*/
     }
 
-    "error status of a non-existing rule" in new RuleEndpoints with DatastoreITConfig {
+    "error status of a non-existing rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val Some(response) = ruleStatus(get(p"/$rulePath/$ruleId/status")).awaitValueUnsafe()
 
       response.status mustEqual Status.NotFound
       response.content.convertTo[Error] mustEqual Error(s"Non existing rule: $ruleId")
     }
 
-    "give status of an existing rule" in new RuleEndpoints with DatastoreITConfig {
+    "give status of an existing rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val status: StatusType = BUILD_START
 
       whenReady(ruleStatusDAO insert RuleStatus(ruleId, status)) { _ =>
@@ -114,14 +121,14 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       }
     }
 
-    "not launch a non existing rule" in new RuleEndpoints with DatastoreITConfig {
+    "not launch a non existing rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val Some(response) = launchRule(put(p"/$rulePath/launch").withBody[Application.Json](RuleLcm(ruleId, envId))).awaitValueUnsafe()
 
       response.status mustEqual Status.NotFound
       response.content.convertTo[Error] mustEqual Error(s"Non existing rule: $ruleId")
     }
 
-    "not launch a busy rule" in new RuleEndpoints with DatastoreITConfig {
+    "not launch a busy rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       override def downloadJarToGoogle(ruleId: String): Future[LogEntry] =
         mock[LogEntry].pure[Future]
 
@@ -137,7 +144,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
     }
 
     // TODO - WIP
-    /*"launch a rule" in new RuleEndpoints with DatastoreITConfig {
+    /*"launch a rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
       whenReady(ruleActiveDAO insert RuleActive(ruleId, true)) { _ =>
 
         val Some(response) = ruleStatus(post(p"/$rulePath/launch").withBody[Application.Json](RuleLcm(ruleId, envId))).awaitValueUnsafe()

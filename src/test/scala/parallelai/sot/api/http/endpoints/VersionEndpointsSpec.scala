@@ -51,7 +51,7 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
           .thenRespond(Result(Encrypted(registeredVersion, apiSharedCrypto), Status.Ok))
       }
 
-      new VersionEndpoints(versionService, licenceService) with DatastoreConfigMock {
+      new VersionEndpoints(licenceService, versionService) with DatastoreConfigMock {
         val expiry: DateTime = DateTime.yesterday()
         val token = Token("licenceId", "organisationCode", "me@gmail.com")
         val version = Version("1.1.4", Option(token), Option(expiry))
@@ -84,7 +84,7 @@ class VersionEndpointsSpec extends WordSpec with MustMatchers {
           .thenRespond(Result(Encrypted(registeredVersion, apiSharedCrypto), Status.Ok))
       }
 
-      new VersionEndpoints(versionService, licenceService) with DatastoreConfigMock {
+      new VersionEndpoints(licenceService, versionService) with DatastoreConfigMock {
         val expiry: DateTime = DateTime.nextDay
         val token = Token("licenceId", "organisationCode", "me@gmail.com")
         val version = Version("1.1.4", Option(token), Option(expiry))

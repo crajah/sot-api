@@ -1,6 +1,7 @@
 package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import io.finch.Application
 import io.finch.Input._
 import io.finch.sprayjson._
@@ -11,10 +12,13 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time._
 import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model._
+import parallelai.sot.api.services.VersionService
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 import parallelai.sot.executor.model.SOTMacroConfig._
@@ -25,21 +29,25 @@ class RuleDagEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+
   val container: Container = datastoreContainer
 
+  val versionService = VersionService()
+  
   val dagId = "dag-id"
   val version = "v1.0.0"
   val dagToCompose = JsObject("id" -> JsString(dagId), "version" -> JsString(version))
 
   "Rule endpoints for DAG" should {
-    "fail to build rule from DAG for a non-existing DAG" in new RuleEndpoints with DatastoreITConfig {
+    "fail to build rule from DAG for a non-existing DAG" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val Some(response) = buildDag(put(p"/$rulePath/compose").withBody[Application.Json](dagToCompose)).awaitValueUnsafe()
 
       response.status mustEqual Status.BadRequest
       response.content.convertTo[Error] mustEqual Error(s"Invalid DAG ID $dagId")
     }
 
-    "fail to build rule from DAG as there is only a schema" in new RuleEndpoints with DatastoreITConfig {
+    "fail to build rule from DAG as there is only a schema" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val avroSchema = AvroSchema("avro", "avroSchemaFrom", "avroName", "v1.0.0", AvroDefinition("record", "avroName", "namespace", JsArray()))
       val dag = Dag(dagId, "dag-name", Edge("avroSchemaFrom", "avroSchemaTo"))
 
@@ -56,7 +64,7 @@ class RuleDagEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
       }
     }
 
-    "build rule from DAG" in new RuleEndpoints with DatastoreITConfig {
+    "build rule from DAG" in new RuleEndpoints(versionService) with DatastoreITConfig {
       val avroSchema = AvroSchema("avro", "avroSchemaFrom", "avroName", "v1.0.0", AvroDefinition("record", "avroName", "namespace", JsArray()))
       val pubSubTap = PubSubTapDefinition("pubsub", "pubSubFrom", "topic", None, None, None)
       val transformationOp = TransformationOp("transformation", "opId", "name", "map", Nil, paramsEncoded = false)

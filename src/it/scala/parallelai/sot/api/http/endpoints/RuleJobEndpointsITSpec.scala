@@ -15,11 +15,14 @@ import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
 import com.google.api.services.dataflow.model
 import com.google.api.services.dataflow.model.Job
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics.{DataFlowRepository, _}
+import parallelai.sot.api.services.VersionService
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 
@@ -29,8 +32,12 @@ class RuleJobEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+
   val container: Container = datastoreContainer
 
+  val versionService = VersionService()
+  
   val stoppedJob: model.Job = new model.Job().setCurrentState(JOB_STATE_STOPPED).setName("stoppedJob")
   val runningJob: model.Job = new model.Job().setCurrentState(JOB_STATE_RUNNING).setName("runningJob")
   val runningJobTwo: model.Job = new model.Job().setCurrentState(JOB_STATE_RUNNING).setName("runningJobTwo")
@@ -41,7 +48,7 @@ class RuleJobEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
   }
 
   "Rule endpoints for jobs" should {
-    "return all running jobs" in new DataflowMechanic with RuleEndpoints with DatastoreITConfig {
+    "return all running jobs" in new RuleEndpoints(versionService) with DataflowMechanic with DatastoreITConfig {
       override val googleRepo: DataFlowProgram[Future] = new DataFlowProgram(interpreter)
 
       override lazy val ruleStatusDAO: ApiDatastore[RuleStatus] = new ApiDatastore[RuleStatus] {
@@ -54,7 +61,7 @@ class RuleJobEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
       response.content mustEqual s"""[{"currentState":"$JOB_STATE_RUNNING","name":"runningJobTwo"},{"currentState":"$JOB_STATE_RUNNING","name":"runningJob"}]""".parseJson
     }
 
-    "return all created jobs with 'all' param" in new DataflowMechanic with RuleEndpoints with DatastoreITConfig {
+    "return all created jobs with 'all' param" in new RuleEndpoints(versionService) with DataflowMechanic with DatastoreITConfig {
       override val googleRepo: DataFlowProgram[Future] = new DataFlowProgram(interpreter)
 
       override lazy val ruleStatusDAO: ApiDatastore[RuleStatus] = new ApiDatastore[RuleStatus] {
@@ -68,7 +75,7 @@ class RuleJobEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
       response.content mustEqual s"""[{"currentState":"$JOB_STATE_STOPPED","name":"stoppedJob"},{"currentState":"$JOB_STATE_RUNNING","name":"runningJob"}]""".parseJson
     }
 
-    "return all created jobs in lates order with 'all' and 'latest' params" in new DataflowMechanic with RuleEndpoints with DatastoreITConfig {
+    "return all created jobs in lates order with 'all' and 'latest' params" in new RuleEndpoints(versionService) with DataflowMechanic with DatastoreITConfig {
       override val googleRepo: DataFlowProgram[Future] = new DataFlowProgram(interpreter)
       stoppedJob setCreateTime "2018-02-16_06_17_46"
       runningJob setCreateTime "2018-02-16_06_16_38"

@@ -11,6 +11,7 @@ import io.finch.{Error => _, Input => _, _}
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
 import spray.json.{JsValue, _}
+import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
@@ -21,7 +22,7 @@ import parallelai.sot.api.json.JsonLens._
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.VersionService
 
-class RuleEndpoints(versionService: VersionService) extends EndpointOps with RuleActions with DagActions with EitherOps {
+class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions with EitherOps {
   this: DatastoreConfig =>
 
   val rulePath: Endpoint[HNil] = api.path :: "rule"
@@ -79,5 +80,6 @@ class RuleEndpoints(versionService: VersionService) extends EndpointOps with Rul
 }
 
 object RuleEndpoints {
-  def apply(versionService: VersionService) = (new RuleEndpoints(versionService) with DatastoreConfig).ruleEndpoints
+  def apply(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) =
+    (new RuleEndpoints(versionService) with DatastoreConfig).ruleEndpoints
 }

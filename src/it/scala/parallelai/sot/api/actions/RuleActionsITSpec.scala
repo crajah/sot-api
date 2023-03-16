@@ -1,5 +1,6 @@
 package parallelai.sot.api.actions
 
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -14,7 +15,10 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
 import org.slf4j.event.Level
 import com.dimafeng.testcontainers.Container
+import com.github.nscala_time.time.Imports.DateTime
 import com.google.cloud.storage.Bucket
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config.executor
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
@@ -185,6 +189,18 @@ class RuleActionsITSpec extends WordSpec with MustMatchers with ScalaFutures wit
         _ = response.status mustEqual Status.Accepted
         _ <- assertRuleStatus(ruleStatusDAO, ruleId, LAUNCH_START)
       } yield ()
+    }
+  }
+
+  "Licenced rule" should {
+    "" in new RuleActions with DatastoreITConfig {
+      val token = Token("licenceId", "organisationCode", "me@gmail.com")
+      val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
+      val registeredVersion = RegisteredVersion(uri, "v0.1.14", token, DateTime.nextDay)
+
+      implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+
+      buildRule(registeredVersion)
     }
   }
 }

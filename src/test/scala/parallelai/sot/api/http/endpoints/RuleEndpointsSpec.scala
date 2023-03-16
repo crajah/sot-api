@@ -1,20 +1,24 @@
 package parallelai.sot.api.http.endpoints
 
 import java.net.URI
+import scala.concurrent.Future
 import io.finch.Application
 import io.finch.Input._
 import io.finch.sprayjson._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
 import com.github.nscala_time.time.Imports._
+import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model.{RegisteredVersion, Rule, RuleStatus, Token}
 import parallelai.sot.api.services.VersionService
 
-
 class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
+  implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
+
   "Rule endpoints" should {
     "handle put request with Rule without organisation code" in {
       val versionService = VersionService()
