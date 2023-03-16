@@ -1,24 +1,20 @@
 package parallelai.sot.api.http.endpoints
 
-import java.net.URI
 import scala.concurrent.Future
 import cats.Monad
-import cats.implicits._
 import io.finch.sprayjson._
 import io.finch.syntax._
 import io.finch.{Errors => _, _}
 import shapeless.HNil
 import spray.json._
-import com.github.nscala_time.time.Imports._
 import com.softwaremill.sttp.SttpBackend
-import com.twitter.finagle.http.Status
 import parallelai.common.secure._
 import parallelai.sot.api.actions.VersionActions
-import parallelai.sot.api.concurrent.ExecutionContexts.webServiceExecutionContext
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.{Errors, Result, ResultOps}
-import parallelai.sot.api.model.{RegisteredVersion, Token, Version, VersionActive}
+import parallelai.sot.api.http.Result
+import parallelai.sot.api.http.service.RegisterVersionImpl
+import parallelai.sot.api.model.{RegisteredVersion, Version, VersionActive}
 import parallelai.sot.api.services.VersionService
 
 class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with VersionActions with DefaultJsonProtocol {
@@ -35,16 +31,8 @@ class VersionEndpoints(versionService: VersionService)(implicit sb: SttpBackend[
   lazy val register: Endpoint[Result[Encrypted[RegisteredVersion]]] = {
     import io.finch.circe._
 
-    //TODO this code is YUK!
     post(versionPath :: "register" :: jsonBody[Encrypted[Version]]) { version: Encrypted[Version] =>
-      val decrypted: Version = Encrypted.decrypt(version)
-      def isExpired(expiringDate: DateTime): Boolean = expiringDate.isBeforeNow
-
-      if (isExpired(decrypted.expiry.getOrElse(new DateTime().minusDays(1)))) Result[Encrypted[RegisteredVersion]](Left(Errors("Version expired!")), Status.UnprocessableEntity).toTFuture else {
-        versionService.versions += ((decrypted.token.get.code, decrypted.value) -> decrypted)
-
-        registerVersion(version).toTFuture
-      }
+      registerVersion(version).toTFuture
     }
   }
 
@@ -82,9 +70,4 @@ object VersionEndpoints {
 
 abstract class RegisterVersion[F[_]: Monad] {
   def apply(versionToken: Encrypted[Version]): F[Result[Encrypted[RegisteredVersion]]]
-}
-
-class RegisterVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterVersion[Future] with LicenceEndpointOps with ResultOps {
-  def apply(versionToken: Encrypted[Version]): Future[Result[Encrypted[RegisteredVersion]]] =
-    Future successful Result(Encrypted(RegisteredVersion(new URI(""), Token("", "", ""), new DateTime()), Crypto(AES, secret.getBytes)), Status.Ok)
 }

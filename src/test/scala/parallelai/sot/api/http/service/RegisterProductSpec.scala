@@ -13,7 +13,7 @@ import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.model._
 
-class RegisterProductImplSpec extends WordSpec with MustMatchers with ScalaFutures with IdGenerator99UniqueSuffix {
+class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures with IdGenerator99UniqueSuffix {
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
