@@ -2,6 +2,7 @@ package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import cats.Id
 import cats.data.EitherT
 import cats.implicits._
 import io.finch.sprayjson._
@@ -13,13 +14,14 @@ import spray.json.{JsValue, _}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
+import parallelai.sot.api.disjunction.EitherOps
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.json.JsonLens._
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.VersionService
 
-class RuleEndpoints(versionService: VersionService) extends EndpointOps with RuleActions with DagActions {
+class RuleEndpoints(versionService: VersionService) extends EndpointOps with RuleActions with DagActions with EitherOps {
   this: DatastoreConfig =>
 
   val rulePath: Endpoint[HNil] = api.path :: "rule"
@@ -33,14 +35,12 @@ class RuleEndpoints(versionService: VersionService) extends EndpointOps with Rul
     put(rulePath :: "build" :: jsonBody[JsValue]) { ruleJson: JsValue =>
       val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
       val version = ruleJson.extract[String]("version")
-      val organisation: Option[String] = ruleJson.asJsObject.fields.get("organisation").map(_.convertTo[String])
 
-      organisation.fold(buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version))(org =>
-        versionLookup(org, version).fold(Response(Error(s"Non existing version: ${org}"), Status.BadRequest).pure[Future])(rv => buildRule(rv))
-      ).toTFuture
+      flatten(for {
+        org <- EitherT.fromOption[Id](ruleJson.asJsObject.fields.get("organisation").map(_.convertTo[String]), buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version))
+        registeredVersion <- EitherT.fromOption[Id](versionService.versions.get(org -> version), Response(Error(s"Non existing version: $version"), Status.BadRequest).pure[Future])
+      } yield buildRule(registeredVersion)).toTFuture
     }
-
-  private def versionLookup(organisation: String, version: String) = versionService.versions.get(organisation -> version)
 
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/compose -H "Content-Type: application/json" -d '{ "id": "my-dag", "version": "2" }'

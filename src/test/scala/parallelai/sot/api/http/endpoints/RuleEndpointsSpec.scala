@@ -38,12 +38,12 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
       val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.now)
 
       new RuleEndpoints(versionService) with DatastoreConfig {
-        val rule = Rule("ruleId", version = "ps-to-bq-test_1513181186942", organisation = Option(organisationCode))
+        val rule = Rule("ruleId", version = tag, organisation = Option(organisationCode))
         val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
 
         response.status mustEqual Status.BadRequest
-        response.content.convertTo[Error] mustEqual Error(s"Non existing version: $organisationCode")
+        response.content.convertTo[Error] mustEqual Error(s"Non existing version: $tag")
 
         versionService.versions mustEqual Map()
       }
