@@ -34,8 +34,7 @@ class RegisterVersionSpec extends WordSpec with MustMatchers with ScalaFutures {
       val token = Token(licenceId, "organisationCode", "me@gmail.com")
 
       val apiSharedCrypto = Crypto(AES, licenceService.apiSharedSecret.value)
-
-      val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.now)
+      val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.nextDay())
 
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture

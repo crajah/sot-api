@@ -61,7 +61,6 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
       val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.now)
       val rule = Rule("ruleId", version = tag, organisation = Option(organisationCode))
 
-
       versionService.versions += (organisationCode -> tag) -> registeredVersion
 
       val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
