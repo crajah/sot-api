@@ -22,23 +22,19 @@ class RegisterVersionImpl(versionService: VersionService, licenceService: Licenc
     request.send.map { response =>
       response.body match {
         case Right(result @ Result(Right(encryptedRegisteredVersion), _)) =>
-          println(s"====> body ${result}")
-          println(s"====> secret ${licenceService.apiSharedSecret.value}")
-          println(s"====> secret ${Crypto(AES, licenceService.apiSharedSecret.value)}")
+          validateExpiry(result, encryptedRegisteredVersion.decrypt(Crypto(AES, licenceService.apiSharedSecret.value)))
 
-          val registeredVersion: RegisteredVersion = encryptedRegisteredVersion.decrypt(Crypto(AES, licenceService.apiSharedSecret.value))
-          println(s"====> body 2 ${registeredVersion}")
+        case Right(result @ Result(Left(_), _)) => result
 
-          versionService.versions += ((registeredVersion.token.code, registeredVersion.version) -> registeredVersion)
-
-          result
-
-        case Right(result @ Result(Left(errors), status)) =>
-          result
-
-        case Left(error) =>
-          Result(Left(Errors(error)), Status.UnprocessableEntity)
+        case Left(error) => Result(Left(Errors(error)), Status.UnprocessableEntity)
       }
+    }
+  }
+
+  private def validateExpiry(result: Result[Encrypted[RegisteredVersion]], registeredVersion: RegisteredVersion) = {
+    if (registeredVersion.expiry.isBeforeNow) Result[Encrypted[RegisteredVersion]](Left(Errors("Version expired!")), Status.UnprocessableEntity) else {
+      versionService.versions += ((registeredVersion.token.code, registeredVersion.version) -> registeredVersion)
+      result
     }
   }
 }

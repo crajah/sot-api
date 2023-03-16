@@ -8,11 +8,11 @@ import org.scalatest.{MustMatchers, WordSpec}
 import com.github.nscala_time.time.Imports._
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.diffiehellman.{ClientSharedSecret, DiffieHellmanClient, DiffieHellmanServer, ServerPublicKey}
+import parallelai.common.secure.diffiehellman.{DiffieHellmanClient, DiffieHellmanServer}
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.Result
-import parallelai.sot.api.model.{RegisteredVersion, SharedSecret, Token, Version}
+import parallelai.sot.api.model.{RegisteredVersion, Token, Version}
 import parallelai.sot.api.services.{LicenceService, VersionService}
 
 class RegisterVersionSpec extends WordSpec with MustMatchers with ScalaFutures {
@@ -35,31 +35,22 @@ class RegisterVersionSpec extends WordSpec with MustMatchers with ScalaFutures {
 
       val apiSharedCrypto = Crypto(AES, licenceService.apiSharedSecret.value)
 
+      val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.now)
+
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(_ => true)
-          .thenRespond(Result(Encrypted(RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, new DateTime()), apiSharedCrypto), Status.Ok))
+          .thenRespond(Result(Encrypted(registeredVersion, apiSharedCrypto), Status.Ok))
       }
 
       val registerVersion = new RegisterVersionImpl(versionService, licenceService)
-
-
       val version = Version(tag, Option(token), Option(DateTime.nextDay))
-
       val result: Future[Result[Encrypted[RegisteredVersion]]] = registerVersion(Encrypted(version))
 
       whenReady(result) { r =>
         r.status mustEqual Status.Ok
 
-
-        println(r.value.right.get.decrypt(apiSharedCrypto))
-
-        versionService.versions mustEqual Map(("organisationCode", tag) -> version)
-
-        // TODO - Copied the following from RegisterProductSpec
-        /*r.value.right.get mustEqual registeredProduct
-
-        registerProduct.licenceId mustEqual "licenceId"*/
+        versionService.versions mustEqual Map(("organisationCode", tag) -> registeredVersion)
       }
     }
   }
