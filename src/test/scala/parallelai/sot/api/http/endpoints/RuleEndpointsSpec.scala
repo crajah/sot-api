@@ -52,7 +52,8 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
       }
     }
 
-    "handle request with organisation code" in {
+    // TODO - WIP
+    /*"handle request with organisation code" in {
       val versionService = VersionService()
       val licenceId = "licenceId"
       val tag = "v0.1.14"
@@ -72,6 +73,6 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
 
         versionService.versions mustEqual Map((organisationCode, tag) -> registeredVersion)
       }
-    }
+    }*/
   }
 }

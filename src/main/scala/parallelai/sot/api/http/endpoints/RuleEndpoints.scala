@@ -1,5 +1,6 @@
 package parallelai.sot.api.http.endpoints
 
+import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.implicits._
@@ -9,6 +10,7 @@ import io.finch.{Error => _, Errors => _, Input => _, _}
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
 import spray.json.{JsValue, _}
+import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
@@ -29,6 +31,14 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
 
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
+  /////////////////////////// TESTING
+  val token = Token("licenceId", "organisation", "me@gmail.com")
+  val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
+  val registeredVersion = RegisteredVersion(uri, "v0", token, DateTime.nextDay)
+
+  versionService.versions += ("organisation", "v0") -> registeredVersion
+  ///////////////////////////
+
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
    */
@@ -38,6 +48,8 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
 
       (ruleJson.asJsObject.getFields("version", "organisation") match {
         case Seq(JsString(version), JsString(organisation)) =>
+          println(s"===> NEW") // TODO
+
           versionService.versions.get(organisation -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).map {
               case Right(file) =>
@@ -50,6 +62,7 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
           }
 
         case Seq(JsString(version)) =>
+          println(s"===> OLD") // TODO
           buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version)
 
         case _ =>

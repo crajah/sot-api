@@ -2,7 +2,8 @@ version: "3.3"
 
 services:
   sot-licence:
-    image: gcr.io/bi-crm-poc/parallelai/sot-licence:latest
+    # image: gcr.io/bi-crm-poc/parallelai/sot-licence:latest
+    image: parallelai/sot-licence:latest
     volumes:
       - ~/.aws/credentials:/root/.aws/credentials:ro
       - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
@@ -13,10 +14,12 @@ services:
       - "9091:9091"
 
   sot-api:
-    image: gcr.io/bi-crm-poc/parallelai/sot-api:latest
+    # image: gcr.io/bi-crm-poc/parallelai/sot-api:latest
+    image: parallelai/sot-api:latest
     volumes:
       - ~/.aws/credentials:/root/.aws/credentials:ro
       - ~/.config/gcloud/application_default_credentials:/root/.config/gcloud/application_default_credentials
+      - ./target/run:/root/target/run
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials
     ports:
