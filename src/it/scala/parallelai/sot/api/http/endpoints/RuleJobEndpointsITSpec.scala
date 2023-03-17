@@ -18,10 +18,10 @@ import com.google.api.services.dataflow.model.Job
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.model._
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics.{DataFlowRepository, _}
+import parallelai.sot.api.model._
 import parallelai.sot.api.services.VersionService
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture

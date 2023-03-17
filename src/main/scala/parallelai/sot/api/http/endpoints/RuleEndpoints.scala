@@ -2,12 +2,10 @@ package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import cats.Id
-import cats.data.EitherT
 import cats.implicits._
 import io.finch.sprayjson._
 import io.finch.syntax.{Mapper => _, _}
-import io.finch.{Error => _, Input => _, _}
+import io.finch.{Error => _, Errors => _, Input => _, _}
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
 import spray.json.{JsValue, _}
@@ -15,19 +13,21 @@ import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
-import parallelai.sot.api.disjunction.EitherOps
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.endpoints.Response.Error
+import parallelai.sot.api.http.service.GetVersionImpl
+import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.json.JsonLens._
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.VersionService
 
-class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions with EitherOps {
+class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
+
+  val getVersion = new GetVersionImpl
 
   val rulePath: Endpoint[HNil] = api.path :: "rule"
 
-  lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
+  lazy val ruleEndpoints = buildRule :+: buildRegisteredVersionRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
@@ -37,10 +37,26 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
       val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
       val version = ruleJson.extract[String]("version")
 
-      flatten(for {
-        org <- EitherT.fromOption[Id](ruleJson.asJsObject.fields.get("organisation").map(_.convertTo[String]), buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version))
-        registeredVersion <- EitherT.fromOption[Id](versionService.versions.get(org -> version), Response(Error(s"Non existing version: $version"), Status.BadRequest).pure[Future])
-      } yield buildRule(registeredVersion)).toTFuture
+      buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version).toTFuture
+    }
+
+  lazy val buildRegisteredVersionRule: Endpoint[Result[String]] =
+    put(rulePath :: "build" :: "registered-version" :: jsonBody[JsValue]) { ruleJson: JsValue =>
+      val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name)) // TODO - Taken from above
+
+      (ruleJson.asJsObject.getFields("version", "organisation") match {
+        case Seq(JsString(version), JsString(organisation)) =>
+          versionService.versions.get(organisation -> version).fold(Result[String](Left(Errors(s"Non existing version: $version")), Status.BadRequest).pure[Future]) { registeredVersion =>
+            getVersion(registeredVersion).map {
+              case Right(file) => Result(file.name, Status.Ok)
+              case Left(error) => Result[String](Left(Errors(error)), Status.BadRequest)
+            }
+          }
+
+        case _ =>
+          Result[String](Left(Errors(s"Invalid JSON")), Status.BadRequest).pure[Future]
+
+      }).toTFuture
     }
 
   /**

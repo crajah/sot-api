@@ -1,17 +1,14 @@
 package parallelai.sot.api.actions
 
-import java.io
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.implicits._
 import shapeless.datatype.datastore._
 import spray.json._
 import com.google.api.services.dataflow.model
-import com.softwaremill.sttp.{Id, _}
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.http.endpoints.Response
 import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.http.service.GoogleCloudService
@@ -19,7 +16,6 @@ import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics._
 import parallelai.sot.api.model.Job._
 import parallelai.sot.api.model.{IdGenerator, _}
-import better.files._
 
 trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenerator
   with GitMechanic with SbtMechanic with ConfigMechanic with StatusMechanic
@@ -45,36 +41,6 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
     } yield build(ruleId, version, ruleDirectory)
 
     Response(RuleStatus(ruleId, BUILD_START), Status.Accepted).pure[Future]
-  }
-
-  def buildRule(registeredVersion: RegisteredVersion)(implicit sb: SttpBackend[Future, Nothing]): Future[Response] = {
-    val request: RequestT[Id, io.File, Nothing] /*: Request[Result[RegisteredProduct], Nothing]*/ =
-      sttp get uri"${registeredVersion.uri.toString}" response asFile((baseDirectory / "temp").createIfNotExists(createParents = true).toJava)
-
-    request.send.map { response =>
-      println(response) // Response[File]
-
-      /*response.body match {
-        case Right(result @ Result(Right(registeredProduct), _)) =>
-          licenceService.licenceId = registeredProduct.apiSharedSecret.decrypt.id
-          licenceService.apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
-
-          result
-
-        case Right(result @ Result(Left(errors), status)) =>
-          result
-
-        case Left(error) =>
-          Result(Left(Errors(error)), Status.UnprocessableEntity)
-      }*/
-    }
-
-
-
-
-
-    findCryptFile(registeredVersion.uri)
-    Response(RuleStatus(registeredVersion.token.code, BUILD_START), Status.Accepted).pure[Future]
   }
 
   def status(ruleId: String): Future[Response] =

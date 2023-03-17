@@ -1,5 +1,6 @@
 package parallelai.sot.api.http.endpoints
 
+import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import better.files._
@@ -14,9 +15,11 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time._
 import org.scalatest.{Inside, MustMatchers, WordSpec}
 import com.dimafeng.testcontainers.Container
+import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
+import parallelai.sot.api.actions.RuleActions
 import parallelai.sot.api.config.baseDirectory
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.http.endpoints.Response.Error
@@ -150,5 +153,16 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
         val Some(response) = ruleStatus(post(p"/$rulePath/launch").withBody[Application.Json](RuleLcm(ruleId, envId))).awaitValueUnsafe()
       }
     }*/
+  }
+
+  "Licenced rule endpoints" should {
+    "be built rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
+      val token = Token("licenceId", "organisationCode", "me@gmail.com")
+      val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
+      val registeredVersion = RegisteredVersion(uri, "v0.1.14", token, DateTime.nextDay)
+
+      // TODO - WIP
+      // buildRegisteredVersionRule(registeredVersion)
+    }
   }
 }
