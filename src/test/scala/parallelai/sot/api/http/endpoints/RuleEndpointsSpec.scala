@@ -12,8 +12,6 @@ import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
-import parallelai.sot.api.http.Errors
-import parallelai.sot.api.http.endpoints.Response.Error
 import parallelai.sot.api.model.{RegisteredVersion, Rule, RuleStatus, Token}
 import parallelai.sot.api.services.VersionService
 
@@ -43,18 +41,18 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
 
       new RuleEndpoints(versionService) with DatastoreConfig {
         val rule = Rule("ruleId", version = tag, organisation = Option(organisationCode))
-        val result = buildRegisteredVersionRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
+        val response = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
-        println(s"===> $result")
+        println(s"===> $response")
 
-        // TODO Btoken because haven't yet stubbed web service call
+        // TODO Broken because haven't yet stubbed web service call
         /*result.status mustEqual Status.BadRequest
         result.value.left.get mustEqual Errors("xxxx")
         versionService.versions mustEqual Map()*/
       }
     }
 
-    "handle request with Rule with organisation code" in {
+    "handle request with organisation code" in {
       val versionService = VersionService()
       val licenceId = "licenceId"
       val tag = "v0.1.14"
@@ -70,9 +68,7 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
         val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
         response.status mustEqual Status.Accepted
-        response.content.convertTo[RuleStatus] must matchPattern {
-          case RuleStatus(_, _, _, _) =>
-        }
+        response.content.convertTo[RuleStatus] must matchPattern { case RuleStatus(_, _, _, _) => }
 
         versionService.versions mustEqual Map((organisationCode, tag) -> registeredVersion)
       }

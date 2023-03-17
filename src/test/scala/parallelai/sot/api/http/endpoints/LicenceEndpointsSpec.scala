@@ -14,7 +14,7 @@ import parallelai.common.secure.diffiehellman.{ClientPublicKey, ClientSharedSecr
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.http.{Errors, Result}
-import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, Product, RegisteredProduct, SharedSecret, Token}
 import parallelai.sot.api.services.LicenceService
 

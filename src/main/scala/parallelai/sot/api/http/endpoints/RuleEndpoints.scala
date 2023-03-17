@@ -15,8 +15,8 @@ import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.service.GetVersionImpl
-import parallelai.sot.api.http.{Errors, Result}
-import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.json.SprayJsonLens._
+import parallelai.sot.api.mechanics.DOWNLOAD_DONE
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.VersionService
 
@@ -27,7 +27,7 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
 
   val rulePath: Endpoint[HNil] = api.path :: "rule"
 
-  lazy val ruleEndpoints = buildRule :+: buildRegisteredVersionRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
+  lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
@@ -35,27 +35,25 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
   lazy val buildRule: Endpoint[Response] =
     put(rulePath :: "build" :: jsonBody[JsValue]) { ruleJson: JsValue =>
       val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
-      val version = ruleJson.extract[String]("version")
-
-      buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version).toTFuture
-    }
-
-  lazy val buildRegisteredVersionRule: Endpoint[Result[String]] =
-    put(rulePath :: "build" :: "registered-version" :: jsonBody[JsValue]) { ruleJson: JsValue =>
-      val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name)) // TODO - Taken from above
 
       (ruleJson.asJsObject.getFields("version", "organisation") match {
         case Seq(JsString(version), JsString(organisation)) =>
-          versionService.versions.get(organisation -> version).fold(Result[String](Left(Errors(s"Non existing version: $version")), Status.BadRequest).pure[Future]) { registeredVersion =>
+          versionService.versions.get(organisation -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).map {
-              case Right(file) => Result(file.name, Status.Ok)
-              case Left(error) => Result[String](Left(Errors(error)), Status.BadRequest)
+              case Right(file) =>
+                Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded", DOWNLOAD_DONE), Status.Ok)
+                // TODO - decrypt, unzip and build
+
+              case Left(error) =>
+                Response(Response.Error(error), Status.BadRequest)
             }
           }
 
-        case _ =>
-          Result[String](Left(Errors(s"Invalid JSON")), Status.BadRequest).pure[Future]
+        case Seq(JsString(version)) =>
+          buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version)
 
+        case _ =>
+          Response(Response.Error(s"Invalid JSON"), Status.BadRequest).pure[Future]
       }).toTFuture
     }
 

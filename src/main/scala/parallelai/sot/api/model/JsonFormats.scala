@@ -2,7 +2,7 @@ package parallelai.sot.api.model
 
 import scala.collection.immutable.ListMap
 import spray.json._
-import parallelai.sot.api.json.JsonLens._
+import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.executor.model.SOTMacroConfig._
 import parallelai.sot.executor.model.SOTMacroJsonConfig
 

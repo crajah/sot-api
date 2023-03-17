@@ -11,7 +11,7 @@ import parallelai.sot.api.model.RegisteredVersion
 class GetVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends GetVersion[Future] {
   def apply(registeredVersion: RegisteredVersion): Future[String Either File] = {
     val request =
-      sttp header("Authorization", "Bearer: AIzaSyD5P5f62toM_xzfMgO6K2kEEiomQM_FD4o") get Uri(registeredVersion.uri) response asFile((baseDirectory / "temp").createIfNotExists(createParents = true).toJava)
+      sttp header("Authorization", "Bearer: 00b4903a97672ffe35aec6827d3ff77c5e9287fbe7670251a6e85d8568b3c551") header("x-goog-project-id", "1008980306982") get Uri(registeredVersion.uri) response asFile((baseDirectory / "temp").createIfNotExists(createParents = true).toJava)
 
     request.send.map(_.body.map(_.toScala))
   }

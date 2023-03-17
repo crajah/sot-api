@@ -19,7 +19,6 @@ import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.actions.RuleActions
 import parallelai.sot.api.config.baseDirectory
 import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFixture}
 import parallelai.sot.api.http.endpoints.Response.Error
@@ -162,7 +161,7 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
       val registeredVersion = RegisteredVersion(uri, "v0.1.14", token, DateTime.nextDay)
 
       // TODO - WIP
-      // buildRegisteredVersionRule(registeredVersion)
+      // buildRule(registeredVersion)
     }
   }
 }

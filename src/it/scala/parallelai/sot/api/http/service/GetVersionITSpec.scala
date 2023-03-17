@@ -2,7 +2,6 @@ package parallelai.sot.api.http.service
 
 import java.net.URI
 import scala.concurrent.Future
-import better.files.File
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
