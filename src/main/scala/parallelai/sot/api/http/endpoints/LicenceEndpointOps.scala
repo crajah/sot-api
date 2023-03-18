@@ -6,7 +6,7 @@ import parallelai.sot.api.config.licence
 trait LicenceEndpointOps {
   implicit class LicencePathContext(val sc: StringContext) {
     def licenceUri(args: Any*): Uri = {
-      val path = s"http://localhost:8081/licence/2${sc.s(args: _*)}"
+      val path = s"${licence.uri}${sc.s(args: _*)}"
       uri"$path?key=${licence.apiKey}"
     }
   }

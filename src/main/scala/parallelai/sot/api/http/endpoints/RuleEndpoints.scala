@@ -35,55 +35,41 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
 
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
-  /////////////////////////// TESTING
-  val token = Token("licenceId3", "organisation", "me@gmail.com")
-  val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
-  val registeredVersion = RegisteredVersion(uri, "v0.1.12", token, DateTime.nextDay)
-
-  versionService.versions += ("organisation", "v0.1.12") -> registeredVersion
-  ///////////////////////////
-
   /**
    * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
    */
   lazy val buildRule: Endpoint[Response] =
-    put(rulePath :: "build" :: jsonBody[JsValue]) { ruleJson: JsValue =>
-      val ruleId = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
+    put(rulePath :: "build" :: paramOption("registered") :: jsonBody[JsValue]) { (registered: Option[String], ruleJson: JsValue) =>
+      val ruleId: String = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
+      val version: String = ruleJson.extract[String]("version")
+      val organisation: Option[String] = ruleJson.extract[Option[String]]("organisation")
 
-      (ruleJson.asJsObject.getFields("version", "organisation") match {
-        case Seq(JsString(version), JsString(organisation)) =>
-          println(s"===> NEW") // TODO
-
-          versionService.versions.get(organisation -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
+      ((registered, organisation) match {
+        case (Some(reg), Some(org)) if reg.isEmpty || reg.equalsIgnoreCase("true") =>
+          versionService.versions.get(org -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).map {
               case Right(file) =>
-                import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
-                import java.nio.file.{Files, Paths}
 
-                val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("/Users/davidainslie/workspace/parallelai/sot-licence/temptation"))
-                val crypto = Crypto(AES, byteArray) //deserialize[SecretKey](byteArray)
+                /*val crypto = Crypto(AES, (baseDirectory / "secret-test").byteArray) //deserialize[SecretKey](byteArray)
+
 
                 val v: Array[Byte] = Encrypted.decrypt(Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto)
 
                 val bos = new BufferedOutputStream(new FileOutputStream("blah.zip"))
                 Stream.continually(bos.write(v))
-                bos.close()
+                bos.close()*/
 
 
-                Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded", DOWNLOAD_DONE), Status.Ok)
-                // TODO - decrypt, unzip and build
+                Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded..... build started", DOWNLOAD_DONE), Status.Accepted)
+              // TODO - decrypt, unzip and build and finally delete
 
               case Left(error) =>
                 Response(Response.Error(error), Status.BadRequest)
             }
           }
 
-        case Seq(JsString(version)) =>
-          println(s"===> OLD") // TODO
-          buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version)
-
         case _ =>
-          Response(Response.Error(s"Invalid JSON"), Status.BadRequest).pure[Future]
+          buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version)
       }).toTFuture
     }
 

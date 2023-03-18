@@ -9,7 +9,7 @@ import io.finch.Application
 import io.finch.Input._
 import io.finch.sprayjson._
 import shapeless.datatype.datastore._
-import spray.json.JsValue
+import spray.json.{JsObject, JsString, JsValue}
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time._
@@ -155,13 +155,26 @@ class RuleEndpointsITSpec extends WordSpec with MustMatchers with ScalaFutures w
   }
 
   "Licenced rule endpoints" should {
-    "be built rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
-      val token = Token("licenceId", "organisationCode", "me@gmail.com")
-      val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
-      val registeredVersion = RegisteredVersion(uri, "v0.1.14", token, DateTime.nextDay)
+    "build rule" in new RuleEndpoints(versionService) with DatastoreITConfig {
+      val version = "v0.1.12"
+      val organisation = "organisation"
+      val token = Token("licenceId3", organisation, "me@gmail.com")
+      val uri = new URI("https://www.googleapis.com/uri-not-used-anymore")
+      val registeredVersion = RegisteredVersion(uri, version, token, DateTime.nextDay)
+
+      versionService.versions += (organisation, version) -> registeredVersion
 
       // TODO - WIP
-      // buildRule(registeredVersion)
+      //buildRule(registeredVersion)
+
+      val versionToBuild = JsObject(
+        "name" -> JsString("my-rule"),
+        "version" -> JsString(version),
+        "organisation" -> JsString(organisation)
+      )
+
+      val Some(response) = buildRule(put(p"/$rulePath/build?registered").withBody[Application.Json](versionToBuild)).awaitValueUnsafe()
+      response.status mustEqual Status.Accepted
     }
   }
 }

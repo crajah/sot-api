@@ -19,8 +19,6 @@ import parallelai.sot.api.http.endpoints._
 import parallelai.sot.api.services.{LicenceService, VersionService}
 
 object Bootstrap extends TwitterServer with Logging {
-  // val port: Flag[Int] = flag("port", 8082 /*SERVER_PORT*/ , "TCP port for HTTP server") // TODO Is this required?
-
   implicit val stats: StatsReceiver = statsReceiver
 
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
@@ -32,6 +30,8 @@ object Bootstrap extends TwitterServer with Logging {
     HealthEndpoints() :+: RuleEndpoints(versionService) :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
     SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints(licenceService)
   ).toServiceAs[Application.Json]
+
+  override val defaultAdminPort: Int = api.adminPort
 
   def main(): Unit = {
     val server = Http.server

@@ -45,7 +45,7 @@ However, as the application creates directories/files running outside a Docker c
 In this case we want to only create necessary directories and files within a "temp" directory in this project.
 That being the case, then run locally with the following, noting the use of the "integration testing configuration":
 ```
-$ sbt '; set javaOptions += "-Dconfig.file=./src/main/resources/application.local.conf"; run'
+$ sbt '; set javaOptions += "-Dconfig.file=./src/main/resources/application.local.conf"; run -admin.port=:0'
 ```
 
 Application Endpoint Examples

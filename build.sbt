@@ -9,8 +9,7 @@ import SotDependencies._
 lazy val scala_2_11 = "2.11.11"
 lazy val scala_2_12 = "2.12.5"
 
-lazy val sbt_0_13_15 = "0.13.15"
-lazy val sbt_1_1_1 = "1.1.1"
+lazy val sbt_1_1 = "1.1.2"
 
 lazy val assemblySettings = assemblyMergeStrategy in assembly := {
   case "application.conf" => MergeStrategy.concat
@@ -156,7 +155,7 @@ dockerfile in docker := {
   new Dockerfile {
     from("hseeberger/scala-sbt")
     env("SCALA_VERSION", scala_2_12)
-    env("SBT_VERSION", sbt_1_1_1)
+    env("SBT_VERSION", sbt_1_1)
     expose(8082)
     expose(9092)
     volume("/executor")
