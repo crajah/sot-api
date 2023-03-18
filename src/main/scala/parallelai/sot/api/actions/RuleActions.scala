@@ -11,7 +11,6 @@ import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.endpoints.Response
 import parallelai.sot.api.http.endpoints.Response.Error
-import parallelai.sot.api.http.service.GoogleCloudService
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics._
 import parallelai.sot.api.model.Job._
@@ -19,7 +18,7 @@ import parallelai.sot.api.model.{IdGenerator, _}
 
 trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenerator
   with GitMechanic with SbtMechanic with ConfigMechanic with StatusMechanic
-  with LaunchMechanic with GoogleStorageMechanic with DataflowMechanic with GoogleCloudService {
+  with LaunchMechanic with GoogleStorageMechanic with DataflowMechanic {
 
   this: DatastoreConfig =>
 
