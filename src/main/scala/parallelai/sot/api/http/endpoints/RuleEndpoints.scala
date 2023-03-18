@@ -3,16 +3,19 @@ package parallelai.sot.api.http.endpoints
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.io.{BufferedSource, Source}
 import cats.implicits._
 import io.finch.sprayjson._
 import io.finch.syntax.{Mapper => _, _}
 import io.finch.{Error => _, Errors => _, Input => _, _}
+import javax.crypto.SecretKey
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
 import spray.json.{JsValue, _}
 import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
+import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
@@ -32,7 +35,7 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
   /////////////////////////// TESTING
-  val token = Token("licenceId", "organisation", "me@gmail.com")
+  val token = Token("licenceId2", "organisation", "me@gmail.com")
   val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
   val registeredVersion = RegisteredVersion(uri, "v0", token, DateTime.nextDay)
 
@@ -53,6 +56,16 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
           versionService.versions.get(organisation -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).map {
               case Right(file) =>
+                import org.apache.commons.lang3.SerializationUtils.{deserialize, serialize}
+                import java.nio.file.{Files, Paths}
+
+                val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("/Users/davidainslie/workspace/parallelai/sot-licence/temptation"))
+                val crypto = Crypto(AES, byteArray) //deserialize[SecretKey](byteArray)
+
+                //Encrypted.decrypt[Array[Byte]](Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto).toIterator
+                Encrypted.decrypt(Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto)
+                //registerVersion.decrypt(crypto)(encryptedZipFile, s"${encryptedZipFile.name.replaceAll("encrypted", "decrypted")}")
+
                 Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded", DOWNLOAD_DONE), Status.Ok)
                 // TODO - decrypt, unzip and build
 

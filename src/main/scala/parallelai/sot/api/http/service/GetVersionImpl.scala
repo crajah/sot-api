@@ -14,7 +14,7 @@ import parallelai.sot.api.model.RegisteredVersion
 class GetVersionImpl(implicit sb: SttpBackend[Future, Nothing]) extends GetVersion[Future] with LicenceEndpointOps with ResultOps {
   def apply(registeredVersion: RegisteredVersion): Future[String Either File] = {
     val request =
-      sttp post licenceUri"/file" body registeredVersion response asFile((baseDirectory / UUID.randomUUID().toString).createIfNotExists(createParents = true).toJava)
+      sttp post licenceUri"/file" body registeredVersion response asFile((baseDirectory / s"${UUID.randomUUID().toString}.zip").createIfNotExists(createParents = true).toJava, overwrite = true)
       // TODO - Sort out "random ID" !!! Unable to write to...
 
     println(s"===> API: sending request to licence for $registeredVersion")
