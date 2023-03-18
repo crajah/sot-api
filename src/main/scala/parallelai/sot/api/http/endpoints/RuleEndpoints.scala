@@ -1,5 +1,6 @@
 package parallelai.sot.api.http.endpoints
 
+import java.io.{BufferedOutputStream, FileOutputStream}
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -35,11 +36,11 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
   lazy val ruleEndpoints = buildRule :+: buildDag :+: ruleStatus :+: launchRule :+: allRule
 
   /////////////////////////// TESTING
-  val token = Token("licenceId2", "organisation", "me@gmail.com")
+  val token = Token("licenceId3", "organisation", "me@gmail.com")
   val uri = new URI("https://www.googleapis.com/download/storage/v1/b/sot-rules/o/licenceId-parallelai-sot-v0-encrypted.zip?generation=1522091908107420&alt=media")
-  val registeredVersion = RegisteredVersion(uri, "v0", token, DateTime.nextDay)
+  val registeredVersion = RegisteredVersion(uri, "v0.1.12", token, DateTime.nextDay)
 
-  versionService.versions += ("organisation", "v0") -> registeredVersion
+  versionService.versions += ("organisation", "v0.1.12") -> registeredVersion
   ///////////////////////////
 
   /**
@@ -62,9 +63,12 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
                 val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("/Users/davidainslie/workspace/parallelai/sot-licence/temptation"))
                 val crypto = Crypto(AES, byteArray) //deserialize[SecretKey](byteArray)
 
-                //Encrypted.decrypt[Array[Byte]](Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto).toIterator
-                Encrypted.decrypt(Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto)
-                //registerVersion.decrypt(crypto)(encryptedZipFile, s"${encryptedZipFile.name.replaceAll("encrypted", "decrypted")}")
+                val v: Array[Byte] = Encrypted.decrypt(Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto)
+
+                val bos = new BufferedOutputStream(new FileOutputStream("blah.zip"))
+                Stream.continually(bos.write(v))
+                bos.close()
+
 
                 Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded", DOWNLOAD_DONE), Status.Ok)
                 // TODO - decrypt, unzip and build
