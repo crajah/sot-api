@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <logger name="parallelai" level="ERROR" additivity="false">
+    <logger name="parallelai" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 

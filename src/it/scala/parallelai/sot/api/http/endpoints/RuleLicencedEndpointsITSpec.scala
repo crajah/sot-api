@@ -26,7 +26,7 @@ class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with Endpoi
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   "Licenced rule endpoints" should {
-    /*"fail to build rule because of an invalid rule declaration" in new RuleEndpoints with DatastoreConfig {
+    "fail to build rule because of an invalid rule declaration" in new RuleEndpoints with DatastoreConfig {
       val version = "v0.1.12"
       val organisation = "organisation"
       val token = Token("licenceId3", organisation, "me@gmail.com")
@@ -44,7 +44,7 @@ class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with Endpoi
 
       val Some(response) = buildRule(put(p"/$rulePath/build?registered&wait").withBody[Application.Json](versionToBuild)).awaitValueUnsafe()
       response.status mustEqual Status.UnprocessableEntity
-    }*/
+    }
 
     "build rule" in new RuleEndpoints with DatastoreConfig {
       val version = "v0.1.12"
@@ -66,11 +66,16 @@ class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with Endpoi
       val file: File = executor.directory / registeredVersion.defineFileName
       file.exists mustBe true
 
-      /*(executor.directory / file.nameWithoutExtension(false)).isDirectory mustBe true
-      (executor.directory / file.nameWithoutExtension(false)).children.nonEmpty mustBe true*/
-
-
-      //TimeUnit.MINUTES.sleep(1)
+      // TODO - assert the JSON that comes back, of the format:
+      /*
+      {
+        "stage": "BUILD",
+        "ident": "RULE: benchmark-1522335510887",
+        "id": "1522335685228",
+        "msg": "For ruleId benchmark-1522335510887 with version v0.1.12 local source code has been deleted",
+        "level": "INFO"
+      }
+       */
     }
   }
 }

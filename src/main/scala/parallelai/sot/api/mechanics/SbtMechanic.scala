@@ -24,11 +24,17 @@ trait SbtMechanic extends StatusMechanic with Logging {
     val statusLog = logPartialStatus(Some(s"RULE: $ruleId"), BUILD)
     val errorLog = logPartialError(Some(s"RULE: $ruleId"), BUILD)
 
+    lazy val processBuilder: ProcessBuilder = {
+      val pb = Process(executor.sbt.command, path.toJava, "SBT_OPTS" -> executor.sbt.opts)
+      info(pb)
+      pb
+    }
+
     (for {
       _ <- changeStatus(ruleId, BUILD_START)
       _ <- statusLog(INFO, s"Executing sbt in ${Process("pwd", path.toJava).!!}")
       sbt <- Future {
-        Process(executor.sbt.command, path.toJava, "SBT_OPTS" -> executor.sbt.opts).!(processLogging) match {
+        processBuilder.!(processLogging) match {
           case 0 => s"Build Success for rule: $ruleId"
           case x => throw new Exception(s"Build Failed for rule: $ruleId with process code $x") // TODO - Not nice
         }
@@ -107,7 +113,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
       _ <- statusLog(INFO, logEntry.msg)
       qs <- cleanProject(ruleId, executor.rule.localFile(ruleId))
       _ <- statusLog(INFO, qs)
-      _ = deleteSource(ruleId, version)
+      //_ = deleteSource(ruleId, version) TODO PUT BACK
       ps <- whenBusy(ruleId, gitPullCommitAndPush(ruleId, version))
       _ <- statusLog(INFO, ps.msg)
       us <- whenBusy(ruleId, uploadJarToGoogle(ruleId, version))

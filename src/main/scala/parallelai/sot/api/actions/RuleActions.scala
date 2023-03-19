@@ -32,7 +32,7 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
       _ <- changeStatus(ruleId, START)
       // TODO - Implement validation of the rule schema
       _ <- busy(ruleId, changeStatus(ruleId, VALIDATE_DONE))
-      ruleDirectory <- if (registered) (File(executor.git.localPath) / version).pure[Future] else codeFromRepo.flatMap(_ => copyRepositoryCode(ruleId, version))
+      ruleDirectory <- if (registered) (executor.rule.localFile(ruleId) / version).pure[Future] else codeFromRepo.flatMap(_ => copyRepositoryCode(ruleId, version))
       _ <- setRuleInfo(ruleId, version, None, None, ruleDirectory)
       _ <- changeStatus(ruleId, CODE_DONE)
       _ <- createConfiguration(ruleJson, ruleDirectory, ruleId)
