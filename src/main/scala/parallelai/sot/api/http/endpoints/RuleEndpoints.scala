@@ -24,9 +24,9 @@ import parallelai.sot.api.http.service.GetVersionImpl
 import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.mechanics.DOWNLOAD_DONE
 import parallelai.sot.api.model._
-import parallelai.sot.api.services.VersionService
+import parallelai.sot.api.services.{LicenceService, VersionService}
 
-class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
+class RuleEndpoints(implicit licenceService: LicenceService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
 
   val getVersion = new GetVersionImpl
@@ -42,13 +42,14 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
     put(rulePath :: "build" :: paramOption("registered") :: jsonBody[JsValue]) { (registered: Option[String], ruleJson: JsValue) =>
       val ruleId: String = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
       val version: String = ruleJson.extract[String]("version")
-      val organisation: Option[String] = ruleJson.extract[Option[String]]("organisation")
+      val organisation: Option[String] = ruleJson.extract[String]('organisation.?)
 
       ((registered, organisation) match {
         case (Some(reg), Some(org)) if reg.isEmpty || reg.equalsIgnoreCase("true") =>
           versionService.versions.get(org -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).map {
               case Right(file) =>
+                licenceService.apiSharedSecret
 
                 /*val crypto = Crypto(AES, (baseDirectory / "secret-test").byteArray) //deserialize[SecretKey](byteArray)
 
@@ -110,6 +111,6 @@ class RuleEndpoints(versionService: VersionService)(implicit sb: SttpBackend[Fut
 }
 
 object RuleEndpoints {
-  def apply(versionService: VersionService)(implicit sb: SttpBackend[Future, Nothing]) =
-    (new RuleEndpoints(versionService) with DatastoreConfig).ruleEndpoints
+  def apply(implicit licenceService: LicenceService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
+    (new RuleEndpoints with DatastoreConfig).ruleEndpoints
 }

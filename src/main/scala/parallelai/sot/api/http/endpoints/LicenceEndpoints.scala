@@ -16,7 +16,7 @@ import parallelai.sot.api.http.service.{RegisterOrganisationImpl, RegisterProduc
 import parallelai.sot.api.model.{Organisation, Product, RegisteredOrganisation, RegisteredProduct, Token}
 import parallelai.sot.api.services.LicenceService
 
-class LicenceEndpoints(licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) extends EndpointOps with Logging {
+class LicenceEndpoints(implicit licenceService: LicenceService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with Logging {
   lazy val registerProduct = new RegisterProductImpl(licenceService)
   lazy val registerOrganisation = new RegisterOrganisationImpl
 
@@ -44,6 +44,6 @@ class LicenceEndpoints(licenceService: LicenceService)(implicit sb: SttpBackend[
 }
 
 object LicenceEndpoints {
-  def apply(licenceService: LicenceService)(implicit sb: SttpBackend[Future, Nothing]) =
-    new LicenceEndpoints(licenceService).licenceEndpoints
+  def apply(implicit licenceService: LicenceService, sb: SttpBackend[Future, Nothing]) =
+    (new LicenceEndpoints).licenceEndpoints
 }

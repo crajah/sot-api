@@ -13,17 +13,18 @@ import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.model.{RegisteredVersion, Rule, RuleStatus, Token}
-import parallelai.sot.api.services.VersionService
+import parallelai.sot.api.services.{LicenceService, VersionService}
 
 class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
+  implicit val licenceService: LicenceService = LicenceService()
+  implicit val versionService: VersionService = VersionService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   "Rule endpoints" should {
     "handle request with Rule without organisation code" in {
-      val versionService = VersionService()
       val rule = Rule("ruleId", version = "ps-to-bq-test_1513181186942", organisation = None)
 
-      new RuleEndpoints(versionService) with DatastoreConfig {
+      new RuleEndpoints with DatastoreConfig {
         val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
         response.status mustEqual Status.Accepted
@@ -33,13 +34,12 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
 
     "handle request with Rule with non existing version for a given organisation code" in {
       val organisationCode = "organisationCode"
-      val versionService = VersionService()
       val licenceId = "licenceId"
       val tag = "v0.1.12"
       val token = Token(licenceId, organisationCode, "me@gmail.com")
       val registeredVersion = RegisteredVersion(new URI("www.victorias-secret.com"), tag, token, DateTime.now)
 
-      new RuleEndpoints(versionService) with DatastoreConfig {
+      new RuleEndpoints with DatastoreConfig {
         val rule = Rule("ruleId", version = tag, organisation = Option(organisationCode))
         val response = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
@@ -65,7 +65,7 @@ class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
 
       versionService.versions += (organisationCode -> tag) -> registeredVersion
 
-      new RuleEndpoints(versionService) with DatastoreConfig {
+      new RuleEndpoints with DatastoreConfig {
         val Some(response) = buildRule(put(p"/$rulePath/build").withBody[Application.Json](rule)).awaitValueUnsafe()
 
         response.status mustEqual Status.Accepted

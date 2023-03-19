@@ -21,14 +21,14 @@ import parallelai.sot.api.services.{LicenceService, VersionService}
 object Bootstrap extends TwitterServer with Logging {
   implicit val stats: StatsReceiver = statsReceiver
 
+  // TODO - Actual persistence required instead of the following 2 hacks (part of first iteration using only in memory persistence)
+  implicit val versionService: VersionService = VersionService()
+  implicit val licenceService: LicenceService = LicenceService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
-  val versionService = VersionService()
-  val licenceService = LicenceService()
-
   val service: Service[Request, Response] = (
-    HealthEndpoints() :+: RuleEndpoints(versionService) :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
-    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints(licenceService)
+    HealthEndpoints() :+: RuleEndpoints.apply :+: VersionEndpoints(versionService, licenceService) :+: EnvEndpoints() :+: StepEndpoints() :+: TapEndpoints() :+: DagEndpoints() :+:
+    SourceEndpoints() :+: SchemaEndpoints() :+: FolderEndpoints() :+: LcmEndpoints() :+: LookupEndpoints() :+: LicenceEndpoints.apply
   ).toServiceAs[Application.Json]
 
   override val defaultAdminPort: Int = api.adminPort
