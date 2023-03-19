@@ -1,28 +1,24 @@
 package parallelai.sot.api.http.endpoints
 
-import java.io.{BufferedOutputStream, FileOutputStream}
-import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.io.{BufferedSource, Source}
+import better.files._
 import cats.implicits._
 import io.finch.sprayjson._
 import io.finch.syntax.{Mapper => _, _}
 import io.finch.{Error => _, Errors => _, Input => _, _}
-import javax.crypto.SecretKey
 import shapeless.HNil
 import spray.json.lenses.JsonLenses._
 import spray.json.{JsValue, _}
-import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.twitter.finagle.http.Status
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.actions.{DagActions, RuleActions}
 import parallelai.sot.api.config._
+import parallelai.sot.api.file.GCFileNameConverter._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.service.GetVersionImpl
 import parallelai.sot.api.json.SprayJsonLens._
-import parallelai.sot.api.mechanics.DOWNLOAD_DONE
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.{LicenceService, VersionService}
 
@@ -39,38 +35,34 @@ class RuleEndpoints(implicit licenceService: LicenceService, versionService: Ver
    * curl -v -X PUT http://localhost:8082/api/2/rule/build -H "Content-Type: application/json" -d '{ "name": "my-rule", "version": "2" }'
    */
   lazy val buildRule: Endpoint[Response] =
-    put(rulePath :: "build" :: paramOption("registered") :: jsonBody[JsValue]) { (registered: Option[String], ruleJson: JsValue) =>
+    put(rulePath :: "build" :: paramOption("registered") :: paramOption("wait") :: jsonBody[JsValue]) { (registered: Option[String], wait: Option[String], ruleJson: JsValue) =>
       val ruleId: String = uniqueId(ruleJson.extract[String]('id.?) getOrElse ruleJson.extract[String]('name))
       val version: String = ruleJson.extract[String]("version")
       val organisation: Option[String] = ruleJson.extract[String]('organisation.?)
 
+      val waitForBuild = wait.exists(w => w.isEmpty || w.equalsIgnoreCase("true"))
+
       ((registered, organisation) match {
         case (Some(reg), Some(org)) if reg.isEmpty || reg.equalsIgnoreCase("true") =>
           versionService.versions.get(org -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
-            getVersion(registeredVersion).map {
+            getVersion(registeredVersion).flatMap {
               case Right(file) =>
-                licenceService.apiSharedSecret
+                val crypto = Crypto(AES, licenceService.apiSharedSecret.value)
+                val decryptedFile = (executor.directory / registeredVersion.defineFileName) writeByteArray Encrypted.fromBytes[Array[Byte]](file.byteArray).decrypt(crypto)
 
-                /*val crypto = Crypto(AES, (baseDirectory / "secret-test").byteArray) //deserialize[SecretKey](byteArray)
+                decryptedFile.unzipTo(File(executor.rule.git.localPath) / ruleId / registeredVersion.version)
 
+                buildRule(ruleJson.update('id ! set(ruleId)), ruleId, registeredVersion.version, registered = true, wait = waitForBuild)
 
-                val v: Array[Byte] = Encrypted.decrypt(Encrypted.fromBytes[Array[Byte]](file.byteArray), crypto)
-
-                val bos = new BufferedOutputStream(new FileOutputStream("blah.zip"))
-                Stream.continually(bos.write(v))
-                bos.close()*/
-
-
-                Response(RuleStatus(s"Rule ruleId: File ${file.name} downloaded..... build started", DOWNLOAD_DONE), Status.Accepted)
-              // TODO - decrypt, unzip and build and finally delete
+                // WIP - decrypt, unzip and build and finally delete
 
               case Left(error) =>
-                Response(Response.Error(error), Status.BadRequest)
+                Response(Response.Error(error), Status.BadRequest).pure[Future]
             }
           }
 
         case _ =>
-          buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version)
+          buildRule(ruleJson.update('id ! set(ruleId)), ruleId, version, wait = waitForBuild)
       }).toTFuture
     }
 
@@ -112,5 +104,5 @@ class RuleEndpoints(implicit licenceService: LicenceService, versionService: Ver
 
 object RuleEndpoints {
   def apply(implicit licenceService: LicenceService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
-    (new RuleEndpoints with DatastoreConfig).ruleEndpoints
+    new RuleEndpoints with DatastoreConfig ruleEndpoints
 }

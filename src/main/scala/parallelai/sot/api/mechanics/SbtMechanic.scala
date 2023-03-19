@@ -41,7 +41,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
       logEntry
     }).recoverWith {
       case t: Throwable =>
-        deleteSource(ruleId, version)
+        //deleteSource(ruleId, version) TODO PUT BACK
 
         (for {
           _ <- handleRuleFailure(ruleId, BUILD_FAILED, t)(statusLog)(errorLog)

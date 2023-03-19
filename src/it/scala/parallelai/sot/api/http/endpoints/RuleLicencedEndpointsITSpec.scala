@@ -4,30 +4,21 @@ import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import better.files._
-import cats.implicits._
 import io.finch.Application
 import io.finch.Input._
 import io.finch.sprayjson._
-import shapeless.datatype.datastore._
-import spray.json.{JsObject, JsString, JsValue}
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.time._
-import org.scalatest.{Inside, MustMatchers, WordSpec}
-import com.dimafeng.testcontainers.Container
+import spray.json._
+import org.scalatest.{MustMatchers, WordSpec}
 import com.github.nscala_time.time.Imports.DateTime
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
-import parallelai.sot.api.config.baseDirectory
-import parallelai.sot.api.gcp.datastore.{DatastoreConfig, DatastoreContainerFixture, DatastoreFixture}
-import parallelai.sot.api.http.endpoints.Response.Error
-import parallelai.sot.api.mechanics._
-import parallelai.sot.api.model.Files._
-import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, _}
+import parallelai.common.secure.diffiehellman.ClientSharedSecret
+import parallelai.sot.api.config._
+import parallelai.sot.api.file.GCFileNameConverter._
+import parallelai.sot.api.gcp.datastore.DatastoreConfig
+import parallelai.sot.api.model._
 import parallelai.sot.api.services.{LicenceService, VersionService}
-import parallelai.sot.containers.ForAllContainersFixture
-import parallelai.sot.containers.gcp.ProjectFixture
 
 class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with EndpointOps {
   implicit val licenceService: LicenceService = LicenceService()
@@ -35,17 +26,15 @@ class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with Endpoi
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   "Licenced rule endpoints" should {
-    "build rule" in new RuleEndpoints with DatastoreConfig {
+    /*"fail to build rule because of an invalid rule declaration" in new RuleEndpoints with DatastoreConfig {
       val version = "v0.1.12"
       val organisation = "organisation"
       val token = Token("licenceId3", organisation, "me@gmail.com")
       val uri = new URI("https://www.googleapis.com/uri-not-used-anymore")
       val registeredVersion = RegisteredVersion(uri, version, token, DateTime.nextDay)
 
+      licenceService.apiSharedSecret = ClientSharedSecret(("." / "src" / "it" / "resources" / "secret-test").byteArray)
       versionService.versions += (organisation, version) -> registeredVersion
-
-      // TODO - WIP
-      //buildRule(registeredVersion)
 
       val versionToBuild = JsObject(
         "name" -> JsString("my-rule"),
@@ -53,8 +42,35 @@ class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with Endpoi
         "organisation" -> JsString(organisation)
       )
 
-      val Some(response) = buildRule(put(p"/$rulePath/build?registered").withBody[Application.Json](versionToBuild)).awaitValueUnsafe()
-      response.status mustEqual Status.Accepted
+      val Some(response) = buildRule(put(p"/$rulePath/build?registered&wait").withBody[Application.Json](versionToBuild)).awaitValueUnsafe()
+      response.status mustEqual Status.UnprocessableEntity
+    }*/
+
+    "build rule" in new RuleEndpoints with DatastoreConfig {
+      val version = "v0.1.12"
+      val organisation = "organisation"
+      val token = Token("licenceId3", organisation, "me@gmail.com")
+      val uri = new URI("https://www.googleapis.com/uri-not-used-anymore")
+      val registeredVersion = RegisteredVersion(uri, version, token, DateTime.nextDay)
+
+      licenceService.apiSharedSecret = ClientSharedSecret(("." / "src" / "it" / "resources" / "secret-test").byteArray)
+      versionService.versions += (organisation, version) -> registeredVersion
+
+      val versionToBuild: JsValue = ("." / "src" / "it" / "resources" / "rule-test.json").contentAsString.parseJson
+
+      val Some(response) = buildRule(put(p"/$rulePath/build?registered&wait").withBody[Application.Json](versionToBuild)).awaitValueUnsafe()
+      response.status mustEqual Status.Ok
+
+      println(response.content.prettyPrint)
+
+      val file: File = executor.directory / registeredVersion.defineFileName
+      file.exists mustBe true
+
+      /*(executor.directory / file.nameWithoutExtension(false)).isDirectory mustBe true
+      (executor.directory / file.nameWithoutExtension(false)).children.nonEmpty mustBe true*/
+
+
+      //TimeUnit.MINUTES.sleep(1)
     }
   }
 }

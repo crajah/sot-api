@@ -1,0 +1,169 @@
+{
+  "name": "benchmark",
+  "version": "v0.1.12",
+  "organisation": "organisation",
+  "schemas": [
+    {
+      "type": "avro",
+      "id": "avroschema1",
+      "name": "avroschema1",
+      "version": "version2",
+      "definition": {
+        "type": "record",
+        "name": "Message",
+        "namespace": "parallelai.sot.avro",
+        "fields": [
+          {
+            "name": "user",
+            "type": "string",
+            "doc": "Name of the user"
+          },
+          {
+            "name": "teamName",
+            "type": "string",
+            "doc": "Name of the team"
+          },
+          {
+            "name": "score",
+            "type": "long",
+            "doc": "User score"
+          },
+          {
+            "name": "eventTime",
+            "type": "long",
+            "doc": "time when event created"
+          },
+          {
+            "name": "eventTimeStr",
+            "type": "string",
+            "doc": "event time string for debugging"
+          }
+        ],
+        "doc": "A basic schema for storing user records"
+      }
+    },
+    {
+      "type": "bigquery",
+      "id": "bigqueryschema1",
+      "name": "bigqueryschema1",
+      "version": "version3",
+      "definition": {
+        "type": "bigquerydefinition",
+        "name": "BigQueryRow",
+        "fields": [
+          {
+            "mode": "REQUIRED",
+            "name": "user",
+            "type": "STRING"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "teamName",
+            "type": "STRING"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "score",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "eventTime",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "eventTimeStr",
+            "type": "STRING"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "score2",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "REQUIRED",
+            "name": "processingTime",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "lookups": [],
+  "taps": [
+    {
+      "type": "pubsub",
+      "id": "pubsubsource1",
+      "topic": "p2pds",
+      "managedSubscription": true,
+      "timestampAttribute": "timestamp_ms"
+    },
+    {
+      "type": "bigquery",
+      "id": "bigquerysource1",
+      "dataset": "bigquerytest",
+      "table": "streaming_word_extract1",
+      "createDisposition": "CREATE_IF_NEEDED",
+      "writeDisposition": "WRITE_APPEND"
+    }
+  ],
+  "steps": [
+    {
+      "type": "source",
+      "id": "in",
+      "name": "in",
+      "schema": "avroschema1",
+      "tap": "pubsubsource1"
+    },
+    {
+      "type": "transformation",
+      "id": "filter",
+      "name": "filter",
+      "op": "filter",
+      "params": [["m => m.get('score) > 2"]],
+      "paramsEncoded": false
+    },
+    {
+      "type": "transformation",
+      "id": "mapper1",
+      "name": "mapper1",
+      "op": "map",
+      "params": [["m => m.append('score2, m.get('score) * 0.23)"]],
+      "paramsEncoded": false
+    },
+    {
+      "type": "transformation",
+      "id": "mapper2",
+      "name": "mapper2",
+      "op": "map",
+      "params": [["m => m.append('processingTime, Helper.fmt.print(Helper.Instant.now()))"]],
+      "paramsEncoded": false
+    },
+    {
+      "type": "sink",
+      "id": "out",
+      "name": "out",
+      "schema": "bigqueryschema1",
+      "tap": "bigquerysource1"
+    }
+  ],
+  "dag": [
+    {
+      "from": "in",
+      "to": "filter"
+    },
+    {
+      "from": "mapper1",
+      "to": "mapper2"
+    },
+    {
+      "from": "filter",
+      "to": "mapper1"
+    },
+    {
+      "from": "mapper2",
+      "to": "out"
+    }
+  ]
+}

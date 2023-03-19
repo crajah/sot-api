@@ -2,6 +2,7 @@ package parallelai.sot.api.actions
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import better.files._
 import cats.implicits._
 import shapeless.datatype.datastore._
 import spray.json._
@@ -22,24 +23,28 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
 
   this: DatastoreConfig =>
 
-  def buildRule(ruleJson: JsValue, ruleId: String, version: String): Future[Response] = {
+  def buildRule(ruleJson: JsValue, ruleId: String, version: String, registered: Boolean = false, wait: Boolean = false): Future[Response] = {
     debug(s"Received following rule to build:\n${ruleJson.prettyPrint}")
 
     // TODO - Validate the Config object
 
-    for {
+    val response = for {
       _ <- changeStatus(ruleId, START)
       // TODO - Implement validation of the rule schema
       _ <- busy(ruleId, changeStatus(ruleId, VALIDATE_DONE))
-      _ <- codeFromRepo
-      ruleDirectory <- copyRepositoryCode(ruleId, version) // TODO Tag parameters to not confuse as they are both Strings
+      ruleDirectory <- if (registered) (File(executor.git.localPath) / version).pure[Future] else codeFromRepo.flatMap(_ => copyRepositoryCode(ruleId, version))
       _ <- setRuleInfo(ruleId, version, None, None, ruleDirectory)
       _ <- changeStatus(ruleId, CODE_DONE)
       _ <- createConfiguration(ruleJson, ruleDirectory, ruleId)
       _ <- changeStatus(ruleId, CONFIG_DONE)
-    } yield build(ruleId, version, ruleDirectory)
+      logEntry <- build(ruleId, version, ruleDirectory)
+    } yield logEntry
 
-    Response(RuleStatus(ruleId, BUILD_START), Status.Accepted).pure[Future]
+    if (wait) {
+      response.map(Response(_))
+    } else {
+      Response(RuleStatus(ruleId, BUILD_START, Option(s"Building rule $ruleId version $version")), Status.Accepted).pure[Future]
+    }
   }
 
   def status(ruleId: String): Future[Response] =
