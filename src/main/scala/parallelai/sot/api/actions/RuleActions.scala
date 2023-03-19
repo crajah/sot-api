@@ -2,7 +2,6 @@ package parallelai.sot.api.actions
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import better.files._
 import cats.implicits._
 import shapeless.datatype.datastore._
 import spray.json._
@@ -102,6 +101,6 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
     }
   }
 
-  private def sortedByCreateTime(jobs: Seq[model.Job]) =
+  private def sortedByCreateTime(jobs: Seq[model.Job]): Seq[model.Job] =
     jobs.sortWith((t1, t2) => t1.getCreateTime > t2.getCreateTime)
 }
