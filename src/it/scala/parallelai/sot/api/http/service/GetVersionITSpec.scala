@@ -10,6 +10,7 @@ import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import parallelai.sot.api.model.{RegisteredVersion, Token}
 
+// TODO - This spec requires Licence service running
 class GetVersionITSpec extends WordSpec with MustMatchers with ScalaFutures {
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 

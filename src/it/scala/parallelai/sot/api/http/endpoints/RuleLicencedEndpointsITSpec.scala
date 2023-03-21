@@ -20,6 +20,7 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.{LicenceService, VersionService}
 
+// TODO - This spec requires Licence service to be running
 class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with EndpointOps {
   implicit val licenceService: LicenceService = LicenceService()
   implicit val versionService: VersionService = VersionService()

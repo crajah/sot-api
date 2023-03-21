@@ -9,15 +9,14 @@ import monocle.macros.syntax.lens._
 import shapeless.HNil
 import com.softwaremill.sttp._
 import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient}
-import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config._
 import parallelai.sot.api.http.Result
 import parallelai.sot.api.http.service.{RegisterOrganisationImpl, RegisterProductImpl}
-import parallelai.sot.api.model.{Organisation, Product, RegisteredOrganisation, RegisteredProduct, Token}
+import parallelai.sot.api.model.{Organisation, Product, RegisteredOrganisation, RegisteredProduct}
 import parallelai.sot.api.services.LicenceService
 
 class LicenceEndpoints(implicit licenceService: LicenceService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with Logging {
-  lazy val registerProduct = new RegisterProductImpl(licenceService)
+  lazy val registerProduct = new RegisterProductImpl
   lazy val registerOrganisation = new RegisterOrganisationImpl
 
   val productPath: Endpoint[HNil] = api.path :: "product"
@@ -33,10 +32,9 @@ class LicenceEndpoints(implicit licenceService: LicenceService, sb: SttpBackend[
 
   lazy val organisationRegistation: Endpoint[Result[RegisteredOrganisation]] =
     post(organisationPath :: "register" :: jsonBody[Organisation]) { organisation: Organisation =>
-      // TODO - License ID should not be encrypted
-      val token = Token(licenceService.licenceId, organisation.code, organisation.email)
+      println(s"API: For organisation, adding licenceId = ${licenceService.licenceId}")
 
-      registerOrganisation(organisation.lens(_.token) set Some(Encrypted(token, Crypto(AES, licenceService.apiSharedSecret.value)))).toTFuture
+      registerOrganisation(organisation.lens(_.id).set(Option(licenceService.licenceId))).toTFuture
     }
 
   protected def createClientPublicKey: ClientPublicKey =

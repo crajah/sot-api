@@ -47,14 +47,12 @@ class RuleEndpoints(implicit licenceService: LicenceService, versionService: Ver
           versionService.versions.get(org -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).flatMap {
               case Right(file) =>
-                val crypto = Crypto(AES, licenceService.apiSharedSecret.value)
+                val crypto = Crypto(AES, licenceService.orgSharedSecret.getEncoded)
                 val decryptedFile = (executor.directory / registeredVersion.defineFileName) writeByteArray Encrypted.fromBytes[Array[Byte]](file.byteArray).decrypt(crypto)
 
                 decryptedFile.unzipTo(File(executor.rule.git.localPath) / ruleId / registeredVersion.version)
 
                 buildRule(ruleJson.update('id ! set(ruleId)), ruleId, registeredVersion.version, registered = true, wait = waitForBuild)
-
-                // WIP - decrypt, unzip and build and finally delete
 
               case Left(error) =>
                 Response(Response.Error(error), Status.BadRequest).pure[Future]

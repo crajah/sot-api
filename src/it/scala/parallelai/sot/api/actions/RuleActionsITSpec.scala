@@ -143,7 +143,7 @@ class RuleActionsITSpec extends WordSpec with MustMatchers with ScalaFutures wit
           _ <- assertRuleStatus(ruleStatusDAO, ruleStatus.id, BUILD_FAILED)
         } yield ()
       } { _ =>
-        (executor.rule.git.localFile(ruleId) / version).children.toVector.sortBy(_.name) match {
+        (executor.rule.git.localFile(ruleId) / version / "config").children.toVector.sortBy(_.name) match {
           case Vector(applicationFile, ruleFile) =>
             applicationFile.name mustEqual "application.conf"
             ruleFile.name mustEqual s"$ruleId.json"

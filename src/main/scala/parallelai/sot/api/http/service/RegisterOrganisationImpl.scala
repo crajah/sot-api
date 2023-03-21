@@ -12,13 +12,10 @@ import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.endpoints.LicenceEndpointOps
 import parallelai.sot.api.http.{Errors, Result, ResultOps}
 import parallelai.sot.api.model.{Organisation, RegisteredOrganisation}
+import parallelai.sot.api.services.LicenceService
 
-class RegisterOrganisationImpl(implicit sb: SttpBackend[Future, Nothing]) extends RegisterOrganisation[Future] with LicenceEndpointOps with ResultOps {
+class RegisterOrganisationImpl(implicit licenceService: LicenceService, sb: SttpBackend[Future, Nothing]) extends RegisterOrganisation[Future] with LicenceEndpointOps with ResultOps {
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
-
-  // TODO - Remove this mutable nonsense and use some persistence mechanism
-  var orgCode: String = _
-  var orgSharedSecret: SecretKey = _
 
   def apply(organisation: Organisation): Future[Result[RegisteredOrganisation]] = {
     val request: Request[Result[RegisteredOrganisation], Nothing] =
@@ -27,9 +24,9 @@ class RegisterOrganisationImpl(implicit sb: SttpBackend[Future, Nothing]) extend
     request.send.map { response =>
       response.body match {
         case Right(result @ Result(Right(registeredOrganisation), status)) =>
-          val sharedSecret = registeredOrganisation.orgSharedSecret.decrypt
-          orgCode = sharedSecret.id
-          orgSharedSecret = sharedSecret.secret
+          val sharedSecret = registeredOrganisation.orgSharedSecret.decrypt(Crypto(AES, licenceService.apiSharedSecret.value))
+          licenceService.orgCode = sharedSecret.id
+          licenceService.orgSharedSecret = sharedSecret.secret
 
           result
 
@@ -46,5 +43,5 @@ class RegisterOrganisationImpl(implicit sb: SttpBackend[Future, Nothing]) extend
     DiffieHellmanClient.createClientPublicKey
 
   protected def createClientSharedSecret(serverPublicKey: ServerPublicKey): ClientSharedSecret =
-    DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+    DiffieHellmanClient createClientSharedSecret serverPublicKey
 }
