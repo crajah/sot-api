@@ -20,9 +20,9 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.service.GetVersionImpl
 import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.model._
-import parallelai.sot.api.services.{LicenceService, VersionService}
+import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 
-class RuleEndpoints(implicit licenceService: LicenceService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
+class RuleEndpoints(implicit licenceService: LicenceService, organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
 
   val getVersion = new GetVersionImpl
@@ -47,7 +47,7 @@ class RuleEndpoints(implicit licenceService: LicenceService, versionService: Ver
           versionService.versions.get(org -> version).fold(Response(Response.Error(s"Non existing version: $version"), Status.BadRequest).pure[Future]) { registeredVersion =>
             getVersion(registeredVersion).flatMap {
               case Right(file) =>
-                val crypto = Crypto(AES, licenceService.orgSharedSecret.getEncoded)
+                val crypto = Crypto(AES, organisationService.orgSharedSecret.getEncoded)
                 val decryptedFile = (executor.directory / registeredVersion.defineFileName) writeByteArray Encrypted.fromBytes[Array[Byte]](file.byteArray).decrypt(crypto)
 
                 decryptedFile.unzipTo(File(executor.rule.git.localPath) / ruleId / registeredVersion.version)
@@ -101,6 +101,6 @@ class RuleEndpoints(implicit licenceService: LicenceService, versionService: Ver
 }
 
 object RuleEndpoints {
-  def apply(implicit licenceService: LicenceService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
+  def apply(implicit licenceService: LicenceService, organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
     new RuleEndpoints with DatastoreConfig ruleEndpoints
 }

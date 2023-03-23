@@ -16,14 +16,15 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Await
 import parallelai.sot.api.config.api
 import parallelai.sot.api.http.endpoints._
-import parallelai.sot.api.services.{LicenceService, VersionService}
+import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 
 object Bootstrap extends TwitterServer with Logging {
   implicit val stats: StatsReceiver = statsReceiver
 
-  // TODO - Actual persistence required instead of the following 2 hacks (part of first iteration using only in memory persistence)
-  implicit val versionService: VersionService = VersionService()
+  // TODO - Actual persistence required instead of the following 3 hacks (part of first iteration using only in memory persistence)
   implicit val licenceService: LicenceService = LicenceService()
+  implicit val organisationService: OrganisationService = OrganisationService()
+  implicit val versionService: VersionService = VersionService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
   val service: Service[Request, Response] = (

@@ -1,4 +1,3 @@
-/*
 package parallelai.sot.api.http.service
 
 import scala.concurrent.Future
@@ -8,7 +7,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpec}
 import com.softwaremill.sttp.testing.SttpBackendStub
 import com.twitter.finagle.http.Status
-import parallelai.common.secure.diffiehellman.{ClientPublicKey, DiffieHellmanClient, DiffieHellmanServer}
+import parallelai.common.secure.diffiehellman._
 import parallelai.common.secure.{AES, Crypto, Encrypted}
 import parallelai.sot.api.config.secret
 import parallelai.sot.api.http.{Errors, Result}
@@ -41,7 +40,9 @@ class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures w
       val productToken = Token("licenceId", "productCode", "productEmail")
       val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
 
-      val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(productToken.id, Crypto.aesSecretKey)))
+      val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(productToken.id, Crypto.aesSecretKey), Crypto(AES, DiffieHellmanClient.createClientSharedSecret(serverPublicKey).value)))
+
+      implicit val licenceService: LicenceService = LicenceService()
 
       implicit val backend: SttpBackendStub[Future, Nothing] = {
         SttpBackendStub.asynchronousFuture
@@ -49,8 +50,7 @@ class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures w
           .thenRespond(Result(registeredProduct, Status.Ok))
       }
 
-      val licenceService = LicenceService()
-      val registerProduct = new RegisterProductImpl(licenceService)
+      val registerProduct = new RegisterProductImpl
 
       val result: Future[Result[RegisteredProduct]] = registerProduct(product)
 
@@ -88,4 +88,4 @@ class RegisterProductSpec extends WordSpec with MustMatchers with ScalaFutures w
       result.value mustBe Left(Errors("Whoops"))
     }
   }
-}*/
+}

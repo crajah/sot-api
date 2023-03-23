@@ -27,7 +27,7 @@ class RegisterProductImpl(implicit licenceService: LicenceService, sb: SttpBacke
           // licenceService.licenceId = registeredProduct.apiSharedSecret.decrypt.id TODO - Was originally this
           licenceService.apiSharedSecret = createClientSharedSecret(registeredProduct.serverPublicKey)
           licenceService.licenceId = registeredProduct.apiSharedSecret.decrypt(Crypto(AES, licenceService.apiSharedSecret.value)).id
-          println(s"API: licenceId = ${licenceService.licenceId}")
+          println(s"API: licenceId = ${licenceService.licenceId}") // TODO - Remove
 
           result
 
@@ -40,10 +40,10 @@ class RegisterProductImpl(implicit licenceService: LicenceService, sb: SttpBacke
     }
   }
 
-  protected def withClientPublicKey(product: Product): Product = {
+  def withClientPublicKey(product: Product): Product = {
     product.lens(_.clientPublicKey).set(Option(DiffieHellmanClient createClientPublicKey))
   }
 
-  protected def createClientSharedSecret(serverPublicKey: ServerPublicKey): ClientSharedSecret =
+  def createClientSharedSecret(serverPublicKey: ServerPublicKey): ClientSharedSecret =
     DiffieHellmanClient createClientSharedSecret serverPublicKey
 }

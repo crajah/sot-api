@@ -22,7 +22,7 @@ import parallelai.sot.api.gcp.datastore.{DatastoreContainerFixture, DatastoreFix
 import parallelai.sot.api.mechanics.GoogleJobStatus._
 import parallelai.sot.api.mechanics.{DataFlowRepository, _}
 import parallelai.sot.api.model._
-import parallelai.sot.api.services.{LicenceService, VersionService}
+import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 import parallelai.sot.containers.ForAllContainersFixture
 import parallelai.sot.containers.gcp.ProjectFixture
 
@@ -33,6 +33,7 @@ class RuleJobEndpointsITSpec extends WordSpec with MustMatchers with ScalaFuture
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(20, Millis))
 
   implicit val licenceService: LicenceService = LicenceService()
+  implicit val organisationService: OrganisationService = OrganisationService()
   implicit val versionService: VersionService = VersionService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 

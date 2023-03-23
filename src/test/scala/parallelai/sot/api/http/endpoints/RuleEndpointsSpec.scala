@@ -13,10 +13,11 @@ import com.softwaremill.sttp.okhttp.OkHttpFutureBackend
 import com.twitter.finagle.http.Status
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.model.{RegisteredVersion, Rule, RuleStatus, Token}
-import parallelai.sot.api.services.{LicenceService, VersionService}
+import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 
 class RuleEndpointsSpec extends WordSpec with MustMatchers with ScalaFutures {
   implicit val licenceService: LicenceService = LicenceService()
+  implicit val organisationService: OrganisationService = OrganisationService()
   implicit val versionService: VersionService = VersionService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 

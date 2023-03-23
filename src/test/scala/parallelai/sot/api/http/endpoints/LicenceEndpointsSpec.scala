@@ -1,4 +1,3 @@
-/*
 package parallelai.sot.api.http.endpoints
 
 import scala.concurrent.Future
@@ -17,10 +16,11 @@ import parallelai.sot.api.config.{secret, _}
 import parallelai.sot.api.http.{Errors, Result}
 import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.model.{IdGenerator99UniqueSuffix, Product, RegisteredProduct, SharedSecret, Token}
-import parallelai.sot.api.services.LicenceService
+import parallelai.sot.api.services.{LicenceService, OrganisationService}
 
 class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99UniqueSuffix {
   implicit val licenceService: LicenceService = LicenceService()
+  implicit val organisationService: OrganisationService = OrganisationService()
 
   implicit val crypto: Crypto = Crypto(AES, secret.getBytes)
 
@@ -71,21 +71,25 @@ class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
     }
 
     "register product" in {
+      val productToken = Token("licenceId", "productCode", "productEmail")
+      val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
+
       val clientPublicKey: ClientPublicKey = DiffieHellmanClient.createClientPublicKey
 
       val (serverPublicKey, serverSharedSecret) = DiffieHellmanServer create clientPublicKey
 
+      val clientSharedSecret = DiffieHellmanClient.createClientSharedSecret(serverPublicKey)
+
       val aesSecretKey: SecretKey = Crypto.aesSecretKey
+
+      val registeredProduct = RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(productToken.id, aesSecretKey), Crypto(AES, clientSharedSecret.value)))
 
       implicit val backend: SttpBackendStub[Future, Nothing] =
         SttpBackendStub.asynchronousFuture
           .whenRequestMatches(req => licenceHostExpectation(req) && registerProductPathExpectation(req) && bodyExpectation(req))
-          .thenRespond(Result(RegisteredProduct(serverPublicKey, Encrypted(SharedSecret(uniqueId(), aesSecretKey))), Status.Ok))
+          .thenRespond(Result(registeredProduct, Status.Ok))
 
       new LicenceEndpoints {
-        val productToken = Token("licenceId", "productCode", "productEmail")
-        val product = Product(productToken.code, productToken.email, Option(Encrypted(productToken)))
-
         val Some(result) = productRegistation(post(p"/$productPath/register").withBody[Application.Json](product)).awaitValueUnsafe()
 
         result.status mustEqual Status.Ok
@@ -94,14 +98,14 @@ class LicenceEndpointsSpec extends WordSpec with MustMatchers with IdGenerator99
 
         registeredProduct.serverPublicKey mustEqual serverPublicKey
 
-        registeredProduct.apiSharedSecret.decrypt must have(
-          'id (uniqueId()),
+        registeredProduct.apiSharedSecret.decrypt(Crypto(AES, clientSharedSecret.value)) must have(
+          'id ("licenceId"),
           'secret (aesSecretKey)
         )
 
-        licenceService.licenceId mustEqual uniqueId()
+        licenceService.licenceId mustEqual "licenceId"
         licenceService.apiSharedSecret mustBe a [ClientSharedSecret]
       }
     }
   }
-}*/
+}

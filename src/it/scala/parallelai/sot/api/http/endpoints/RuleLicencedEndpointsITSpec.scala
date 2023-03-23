@@ -18,11 +18,12 @@ import parallelai.sot.api.config._
 import parallelai.sot.api.file.GCFileNameConverter._
 import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.model._
-import parallelai.sot.api.services.{LicenceService, VersionService}
+import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 
 // TODO - This spec requires Licence service to be running
 class RuleLicencedEndpointsITSpec extends WordSpec with MustMatchers with EndpointOps {
   implicit val licenceService: LicenceService = LicenceService()
+  implicit val organisationService: OrganisationService = OrganisationService()
   implicit val versionService: VersionService = VersionService()
   implicit val okSttpFutureBackend: SttpBackend[Future, Nothing] = OkHttpFutureBackend()
 
