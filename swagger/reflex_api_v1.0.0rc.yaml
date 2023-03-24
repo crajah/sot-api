@@ -292,6 +292,8 @@ paths:
           name: body
           description: ''
           required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
       responses:
         '200':
           description: OK
@@ -306,6 +308,8 @@ paths:
           name: body
           description: ''
           required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
       responses:
         '200':
           description: OK
@@ -320,6 +324,8 @@ paths:
           name: body
           description: ''
           required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
       responses:
         '200':
           description: OK
@@ -681,15 +687,15 @@ paths:
       description: >
         Allows for the direct creation of a rule with its associated rule config.
       parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            $ref: '#/definitions/Id'
         - in: path
           name: registered
           type: boolean
           required: false
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutorInfo'
       responses:
         '202':
           description: successful operation
