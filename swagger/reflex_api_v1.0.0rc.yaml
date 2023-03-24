@@ -282,6 +282,45 @@ paths:
         '500':
           $ref: '#/responses/500'
 
+  /product/register:
+    post:
+      summary: Initialisation of API
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+      responses:
+        '200':
+          description: OK
+
+  /org/register:
+    post:
+      summary: Add Organisation to API
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+      responses:
+        '200':
+          description: OK
+
+  /version/register:
+    post:
+      summary: Register and get Version
+      description: ''
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+      responses:
+        '200':
+          description: OK
+
   /schema:
     post:
       tags:
@@ -644,6 +683,10 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Id'
+        - in: path
+          name: registered
+          type: boolean
+          required: false
       responses:
         '202':
           description: successful operation
