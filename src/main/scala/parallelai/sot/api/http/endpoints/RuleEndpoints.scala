@@ -22,7 +22,7 @@ import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.model._
 import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
 
-class RuleEndpoints(implicit licenceService: LicenceService, organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
+class RuleEndpoints(implicit organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
 
   val getVersion = new GetVersionImpl
@@ -101,6 +101,6 @@ class RuleEndpoints(implicit licenceService: LicenceService, organisationService
 }
 
 object RuleEndpoints {
-  def apply(implicit licenceService: LicenceService, organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
+  def apply(implicit organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) =
     new RuleEndpoints with DatastoreConfig ruleEndpoints
 }

@@ -1,0 +1,5 @@
+GET http://35.197.194.27:80/api/2/health?key=AIzaSyD5P5f62toM_xzfMgO6K2kEEiomQM_FD4o
+Accept: application/json
+Cache-Control: no-cache
+
+###
