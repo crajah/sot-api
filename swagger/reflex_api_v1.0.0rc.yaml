@@ -691,6 +691,7 @@ paths:
           name: registered
           type: boolean
           required: false
+      parameters:
         - in: body
           name: body
           required: true
