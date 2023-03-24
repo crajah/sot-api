@@ -685,12 +685,7 @@ paths:
       summary: Build the Rule from its rule config
       operationId: build-rule
       description: >
-        Allows for the direct creation of a rule with its associated rule config.
-      parameters:
-        - in: path
-          name: registered
-          type: boolean
-          required: false
+        Allows for the direct creation of a rule with its associated rule config, which can "registered" by adding registered to REST path
       parameters:
         - in: body
           name: body
