@@ -20,7 +20,7 @@ import parallelai.sot.api.gcp.datastore.DatastoreConfig
 import parallelai.sot.api.http.service.GetVersionImpl
 import parallelai.sot.api.json.SprayJsonLens._
 import parallelai.sot.api.model._
-import parallelai.sot.api.services.{LicenceService, OrganisationService, VersionService}
+import parallelai.sot.api.services.{OrganisationService, VersionService}
 
 class RuleEndpoints(implicit organisationService: OrganisationService, versionService: VersionService, sb: SttpBackend[Future, Nothing]) extends EndpointOps with RuleActions with DagActions {
   this: DatastoreConfig =>
