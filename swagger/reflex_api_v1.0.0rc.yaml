@@ -16,7 +16,7 @@ tags:
     description: 'Folders are used to group Schemas, Taps and Rules'
   - name: schemas
     description: >-
-      Schemas define the shape of teh data. They can be in Avro, Protocol
+      Schemas define the shape of the data. They can be in Avro, Protocol
       Buffers and JSON Schema format
   - name: versions
     description: Versions represent the version of the Executor to use with the Rule
@@ -88,7 +88,7 @@ paths:
       tags:
         - envs
       summary: System health of dependent system "licence"
-      operationId: get_licent_health
+      operationId: get-licence-health
       description: ''
       responses:
         '200':
@@ -99,7 +99,7 @@ paths:
       tags:
         - envs
       summary: System health
-      operationId: get_health
+      operationId: get-health
       description: ''
       responses:
         '200':
@@ -110,7 +110,7 @@ paths:
       tags:
         - envs
       summary: Create a Env
-      operationId: create_env
+      operationId: create-env
       description: ''
       parameters:
         - in: body
@@ -131,7 +131,7 @@ paths:
       tags:
         - envs
       summary: Get all the Envs in the System
-      operationId: get_all_envs
+      operationId: get-all-envs
       description: ''
       responses:
         '200':
@@ -147,7 +147,7 @@ paths:
       tags:
         - envs
       summary: Delete an Env
-      operationId: delete_env
+      operationId: delete-env
       description: ''
       parameters:
         - in: body
@@ -169,7 +169,7 @@ paths:
       summary: >-
         Setup a new version executor of rules. Not to be used unless new version
         has been enabled by admin
-      operationId: get_all_versions
+      operationId: get-all-versions
       description: ''
       parameters:
         - in: body
@@ -190,7 +190,7 @@ paths:
       tags:
         - versions
       summary: Find all executor versions
-      operationId: find_executor_versions
+      operationId: find-executor-versions
       description: ''
       parameters: []
       responses:
@@ -207,7 +207,7 @@ paths:
       tags:
         - versions
       summary: Delete an existing executor version. Not to be used lightly
-      operationId: delete_exectuor_version
+      operationId: delete-executor-version
       description: ''
       parameters:
         - in: body
@@ -228,7 +228,7 @@ paths:
       tags:
         - versions
       summary: Refresh an existing executor version
-      operationId: refresh_exectuor_version
+      operationId: refresh-executor-version
       description: ''
       parameters:
         - in: body
@@ -249,7 +249,7 @@ paths:
       tags:
         - versions
       summary: Activate / Deactive an executor version
-      operationId: activate_deactivate_executor_version
+      operationId: activate-deactivate-executor-version
       description: ''
       parameters:
         - in: body
@@ -269,7 +269,7 @@ paths:
       tags:
         - versions
       summary: Find all active executor versions
-      operationId: find_all_active_executor_versions
+      operationId: find-all-active-executor-versions
       description: ''
       parameters: []
       responses:
@@ -285,6 +285,7 @@ paths:
   /product/register:
     post:
       summary: Initialisation of API
+      operationId: product-registration
       description: ''
       parameters:
         - in: body
@@ -298,6 +299,7 @@ paths:
   /org/register:
     post:
       summary: Add Organisation to API
+      operationId: organisation-registration
       description: ''
       parameters:
         - in: body
@@ -311,6 +313,7 @@ paths:
   /version/register:
     post:
       summary: Register and get Version
+      operationId: version-registration
       description: ''
       parameters:
         - in: body
@@ -326,7 +329,7 @@ paths:
       tags:
         - schemas
       summary: Register a new schema
-      operationId: register_schema
+      operationId: register-schema
       description: ''
       parameters:
         - in: body
@@ -347,7 +350,7 @@ paths:
       tags:
         - schemas
       summary: Get All Schemas
-      operationId: get_all_schemas
+      operationId: get-all-schemas
       description: ''
       responses:
         '200':
@@ -363,7 +366,7 @@ paths:
       tags:
         - schemas
       summary: Delete a Schema
-      operationId: delete_schema
+      operationId: delete-schema
       description: ''
       parameters:
         - in: body
@@ -383,7 +386,7 @@ paths:
       tags:
         - schemas
       summary: Get a schema
-      operationId: get_schema
+      operationId: get-schema
       description: ''
       parameters:
         - in: path
@@ -403,7 +406,7 @@ paths:
       tags:
         - taps
       summary: Create a new Tap definition
-      operationId: create_new_tap
+      operationId: create-new-tap
       description: ''
       parameters:
         - in: body
@@ -424,7 +427,7 @@ paths:
       tags:
         - taps
       summary: Get all Taps defined
-      operationId: get_all_taps
+      operationId: get-all-taps
       description: ''
       parameters: []
       responses:
@@ -441,7 +444,7 @@ paths:
       tags:
         - taps
       summary: Delete an existing Tap definition
-      operationId: delete_tap
+      operationId: delete-tap
       description: ''
       parameters:
         - in: body
@@ -462,7 +465,7 @@ paths:
       tags:
         - taps
       summary: Get details about a Tap
-      operationId: get_tap_details
+      operationId: get-tap-details
       description: ''
       parameters:
         - in: path
@@ -482,7 +485,7 @@ paths:
       tags:
         - steps
       summary: Create a new Step definition
-      operationId: create_new_step
+      operationId: create-new-step
       description: ''
       parameters:
         - in: body
@@ -503,7 +506,7 @@ paths:
       tags:
         - steps
       summary: Get all Steps defined
-      operationId: get_all_steps
+      operationId: get-all-steps
       description: ''
       parameters: []
       responses:
@@ -520,7 +523,7 @@ paths:
       tags:
         - steps
       summary: Delete an existing Step definition
-      operationId: delete_step
+      operationId: delete-step
       description: ''
       parameters:
         - in: body
@@ -541,7 +544,7 @@ paths:
       tags:
         - steps
       summary: Get details about a Step
-      operationId: get_step_details
+      operationId: get-step-details
       description: ''
       parameters:
         - in: path
@@ -561,7 +564,7 @@ paths:
       tags:
         - dag
       summary: Create a new DAG definition
-      operationId: create_dag
+      operationId: create-dag
       description: ''
       parameters:
         - in: body
@@ -582,7 +585,7 @@ paths:
       tags:
         - dag
       summary: Get all DAGs defined
-      operationId: get_all_dags
+      operationId: get-all-dags
       description: ''
       parameters: []
       responses:
@@ -599,7 +602,7 @@ paths:
       tags:
         - dag
       summary: Delete an existing Dag
-      operationId: delete_dag
+      operationId: delete-dag
       description: ''
       parameters:
         - in: body
@@ -618,7 +621,7 @@ paths:
       tags:
         - dag
       summary: Get details about a DAG
-      operationId: delete_dag_details
+      operationId: delete-dag-details
       description: ''
       parameters:
         - in: path
@@ -638,7 +641,7 @@ paths:
       tags:
         - rules
       summary: Get all rules launched
-      operationId: get_launched_rules
+      operationId: get-launched-rules
       description: Returns all rules and status of each rule.
       parameters: []
       responses:
@@ -655,7 +658,7 @@ paths:
       tags:
         - rules
       summary: Delete a rule instance
-      operationId: delete_rule
+      operationId: delete-rule
       description: ''
       parameters:
         - in: body
@@ -674,7 +677,7 @@ paths:
       tags:
         - rules
       summary: Build the Rule from its rule config
-      operationId: build_rule
+      operationId: build-rule
       description: >
         Allows for the direct creation of a rule with its associated rule config.
       parameters:
@@ -700,7 +703,7 @@ paths:
       tags:
         - rules
       summary: Compose a rule instance from its DAG
-      operationId: compose_rule
+      operationId: compose-rule
       description: ''
       parameters:
         - in: body
@@ -721,7 +724,7 @@ paths:
       tags:
         - rules
       summary: Launch a Rule
-      operationId: launch_rule
+      operationId: launch-rule
       description: ''
       parameters:
         - in: body
@@ -742,7 +745,7 @@ paths:
       tags:
         - rules
       summary: Stop a Rule
-      operationId: stop_rule
+      operationId: stop-rule
       description: ''
       parameters:
         - in: body
@@ -763,7 +766,7 @@ paths:
       tags:
         - rules
       summary: Get status of a Rule
-      operationId: get_rule_status
+      operationId: get-rule-status
       description: ''
       parameters:
         - in: path
