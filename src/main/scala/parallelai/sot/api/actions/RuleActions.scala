@@ -36,7 +36,7 @@ trait RuleActions extends EntityFormats with DatastoreMappableType with IdGenera
       _ <- changeStatus(ruleId, CODE_DONE)
       _ <- createConfiguration(ruleJson, ruleDirectory, ruleId)
       _ <- changeStatus(ruleId, CONFIG_DONE)
-      logEntry <- build(ruleId, version, ruleDirectory)
+      logEntry <- build(ruleId, version, ruleDirectory, registered)
     } yield logEntry
 
     if (wait) {

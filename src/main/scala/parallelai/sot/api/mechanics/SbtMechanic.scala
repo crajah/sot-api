@@ -19,7 +19,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
 
   private implicit val ec: ExecutionContext = SbtExcecutionContext()
 
-  def build(ruleId: String, version: String, path: File): Future[LogEntry] = blocking {
+  def build(ruleId: String, version: String, path: File, registered: Boolean): Future[LogEntry] = blocking {
     val processLogging = new ProcessLogging(ruleId)
     val statusLog = logPartialStatus(Some(s"RULE: $ruleId"), BUILD)
     val errorLog = logPartialError(Some(s"RULE: $ruleId"), BUILD)
@@ -40,7 +40,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
         }
       }(ec)
       _ <- handleRuleSuccess(ruleId, BUILD_DONE, sbt)(statusLog)
-      _ <- whenBusy(ruleId, moveJarToStage(ruleId, version)) // TODO moveJarToStage is doing far too much
+      _ <- whenBusy(ruleId, moveJarToStage(ruleId, version, registered)) // TODO moveJarToStage is doing far too much
       logEntry <- statusLog(INFO, s"For ruleId $ruleId with version $version local source code has been deleted")
     } yield {
       processLogging.flush()
@@ -97,7 +97,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
   }
 
   // TODO This is doing far too much
-  protected def moveJarToStage(ruleId: String, version: String): Future[LogEntry] = {
+  protected def moveJarToStage(ruleId: String, version: String, registered: Boolean): Future[LogEntry] = {
     val statusLog = logPartialStatus(Some(s"RULE: $ruleId"), PACKAGE)
     val errorLog = logPartialError(Some(s"RULE: $ruleId"), PACKAGE)
 
@@ -113,8 +113,9 @@ trait SbtMechanic extends StatusMechanic with Logging {
       _ <- statusLog(INFO, logEntry.msg)
       qs <- cleanProject(ruleId, executor.rule.localFile(ruleId))
       _ <- statusLog(INFO, qs)
-      //_ = deleteSource(ruleId, version) TODO PUT BACK
-      ps <- whenBusy(ruleId, gitPullCommitAndPush(ruleId, version))
+      _ = deleteSource(ruleId, version)
+      ps <- whenBusy(ruleId, if (registered) statusLog(INFO, "No Git interation required for registered version") else gitPullCommitAndPush(ruleId, version))
+      _ <- statusLog(INFO, ps.msg)
       _ <- statusLog(INFO, ps.msg)
       us <- whenBusy(ruleId, uploadJarToGoogle(ruleId, version))
     } yield us) recoverWith {

@@ -27,3 +27,11 @@ services:
       - "9092:9092"
     links:
       - sot-licence
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 2G
