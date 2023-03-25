@@ -122,7 +122,7 @@ trait GitMechanic extends StatusMechanic with DatastoreMappableType {
       }
 
       for {
-        (git, _) <- apply(Git.open(File(executor.rule.git.localPath).toJava), s"Git code ${executor.rule.git.localPath} - Repository setup")
+        (git, _) <- apply(Git.open(executor.rule.git.localPath.toFile), s"Git code ${executor.rule.git.localPath} - Repository setup")
         _ <- apply(git.pull().setCredentialsProvider(credentialsProvider).setRebase(true).call(), "Pull with Rebase complete")
         _ <- apply(git.add().addFilepattern(ruleId).call(), "Add all complete")
         _ <- apply(git.commit().setAll(true).setMessage(s"Added Rule $ruleId").call(), "Commit complete")

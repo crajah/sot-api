@@ -25,7 +25,7 @@ trait SbtMechanic extends StatusMechanic with Logging {
     val errorLog = logPartialError(Some(s"RULE: $ruleId"), BUILD)
 
     lazy val processBuilder: ProcessBuilder = {
-      val pb = Process(executor.sbt.command, path.toJava, "SBT_OPTS" -> executor.sbt.opts)
+      val pb = Process(executor.sbt.command, path.toJava, "SBT_OPTS" -> executor.sbt.opts, "JAVA_OPTS" -> executor.sbt.opts)
       info(pb)
       pb
     }
