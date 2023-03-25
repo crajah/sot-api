@@ -1,4 +1,4 @@
-POST http://35.197.194.27:80/api/2/rule/build?registered&key=AIzaSyD5P5f62toM_xzfMgO6K2kEEiomQM_FD4o
+PUT http://35.197.194.27:80/api/2/rule/build?registered&key=AIzaSyD5P5f62toM_xzfMgO6K2kEEiomQM_FD4o
 Content-Type: application/json
 Accept: application/json
 Cache-Control: no-cache
