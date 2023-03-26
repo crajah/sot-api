@@ -72,6 +72,10 @@ spec:
                 secretKeyRef:
                   name: secret
                   key: SECRET
+          livenessProbe:
+            httpGet:
+              path: /api/2/health
+              port: 8082
       volumes:
         - name: service-account-creds
           secret:
